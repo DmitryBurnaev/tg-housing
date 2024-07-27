@@ -6,14 +6,14 @@
       ansible.builtin.copy:
         src: ./etc.artefact.tgz
         dest: {{ project_root }}
-        owner: deploy
-        group: deploy
-        mode: '0644'
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: "0644"
 
     - name: Unzip etc remote artefact
       ansible.builtin.unarchive:
-        src: {{ artefact_url }}
-        dest: {{ project_root }}
+        src: "{{ artefact_url }}"
+        dest: "{{ project_root }}"
         remote_src: yes
 
     - name: Pull image
