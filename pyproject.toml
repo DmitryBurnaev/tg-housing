@@ -21,7 +21,6 @@ pytest-asyncio = "^0.23.7"
 coverage = "^7.6.0"
 ruff = "^0.4.4"
 mypy = "^1.10.1"
-ansible = "^10.2.0"
 
 [build-system]
 requires = ["poetry-core"]
