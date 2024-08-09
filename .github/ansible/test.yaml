@@ -1,0 +1,43 @@
+- name: My first play
+  hosts: all
+  gather_facts: no
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+    project_root: /opt/tg-housing
+    user: deploy
+    group: deploy
+
+  tasks:
+#    - name: Ping my hosts
+#      ansible.builtin.ping:
+
+    - debug:
+        var: ansible_facts
+    - name: Copy etc artefact to server
+      ansible.builtin.copy:
+        src: /Users/dmitry/work/projects/my/tg-housing-services/.local/deploy_artefacts.tar.gz
+        dest: "{{ project_root }}"
+#        owner: "{{ user }}"
+#        group: "{{ group }}"
+        mode: "0644"
+
+    - name: Unzip etc remote artefact
+      ansible.builtin.unarchive:
+        src: "{{ project_root }}/deploy_artefacts.tar.gz"
+        dest: "{{ project_root }}"
+        remote_src: yes
+
+#
+##   - name: Echo python version
+##     ansible.builtin.shell:
+##      msg: Hello world
+#
+#   - name: This command will change the working directory to somedir/
+#     ansible.builtin.shell:
+#       cmd: ls -lah
+#       chdir: /opt/
+#
+#   - name: Print message
+#     ansible.builtin.debug:
+#      msg: Hello world
