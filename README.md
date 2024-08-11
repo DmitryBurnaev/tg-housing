@@ -1,8 +1,6 @@
 # tg-housing
 Housing services' TG bot
 
-
-
 # Install and run
 
 ## Upload config files
