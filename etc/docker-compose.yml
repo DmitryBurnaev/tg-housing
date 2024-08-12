@@ -1,8 +1,10 @@
 services:
   bot:
     image:
-      ${REGISTRY_URL}/${REGISTRY_SERVICE_NAME}:latest
+      ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG}
     env_file:
       - .env
     environment:
       - APP_SERVICE=bot
+    volumes:
+      - ${PWD}/.data:/app/.data
