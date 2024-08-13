@@ -18,8 +18,8 @@
       ansible.builtin.copy:
         src: /Users/dmitry/work/projects/my/tg-housing-services/.local/deploy_artefacts.tar.gz
         dest: "{{ project_root }}"
-#        owner: "{{ user }}"
-#        group: "{{ group }}"
+        owner: "{{ user }}"
+        group: "{{ group }}"
         mode: "0644"
 
     - name: Unzip etc remote artefact
@@ -27,6 +27,11 @@
         src: "{{ project_root }}/deploy_artefacts.tar.gz"
         dest: "{{ project_root }}"
         remote_src: yes
+
+    - name: Remove artefact
+      ansible.builtin.file:
+        path: "{{ project_root }}/deploy_artefacts.tar.gz"
+        state: "absent"
 
 #
 ##   - name: Echo python version

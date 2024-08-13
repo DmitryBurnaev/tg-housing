@@ -65,8 +65,7 @@ jobs:
         id: artefact
         shell: bash
         run: |
-          cd etc
-          tar -czvf ~/etc-artefacts.tar.gz .*
+          cd etc && tar -czvf ~/etc-artefacts.tar.gz .*
 
 #
 #      - name: Build and push Docker image
