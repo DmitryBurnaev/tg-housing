@@ -67,6 +67,17 @@ jobs:
         run: |
           cd etc && tar -czvf ~/etc-artefacts.tar.gz .*
 
+      - name: Creating artifacts
+        if: success()
+        id: artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-artefacts
+          path: |
+            etc
+            !etc/ansible/*
+          retention-days: 7
+
 #
 #      - name: Build and push Docker image
 #        id: push
