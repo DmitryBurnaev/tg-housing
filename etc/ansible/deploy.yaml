@@ -25,5 +25,5 @@
     - name: Clean UP
       shell: "echo y | docker image prune -a"
 
-    - name: Clean UP
+    - name: Check Status
       shell: "systemctl service {{ service_name }} status"

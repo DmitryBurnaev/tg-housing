@@ -1,4 +1,4 @@
-- name: My first play
+- name: Test playbook
   hosts: all
   gather_facts: no
 
@@ -7,31 +7,49 @@
     project_root: /opt/tg-housing
     user: deploy
     group: deploy
+    artefact_url: https://github.com/DmitryBurnaev/tg-housing/actions/runs/10406888669/artifacts/1816451778
+    image_url: ghcr.io/dmitryburnaev/tg-housing
+    image_tag: feature-9-fix-ci
 
   tasks:
 #    - name: Ping my hosts
 #      ansible.builtin.ping:
-
-    - debug:
-        var: ansible_facts
-    - name: Copy etc artefact to server
-      ansible.builtin.copy:
-        src: /Users/dmitry/work/projects/my/tg-housing-services/.local/deploy_artefacts.tar.gz
-        dest: "{{ project_root }}"
-        owner: "{{ user }}"
-        group: "{{ group }}"
-        mode: "0644"
+#
+#    - debug:
+#        var: ansible_facts
 
     - name: Unzip etc remote artefact
       ansible.builtin.unarchive:
-        src: "{{ project_root }}/deploy_artefacts.tar.gz"
+        src: "{{ artefact_url }}"
         dest: "{{ project_root }}"
         remote_src: yes
 
-    - name: Remove artefact
-      ansible.builtin.file:
-        path: "{{ project_root }}/deploy_artefacts.tar.gz"
-        state: "absent"
+    - name: Pull image
+      shell: "docker pull {{ image_url }}:{{ image_tag }}"
+
+    - name: Restart service
+      shell: "systemctl service {{ service_name }} restart"
+
+    - name: Clean UP
+      shell: "echo y | docker image prune -a"
+
+    - name: Check Status
+      shell: "systemctl service {{ service_name }} status"
+
+#
+#    - name: Copy etc artefact to server
+#      ansible.builtin.copy:
+#        src: /Users/dmitry/work/projects/my/tg-housing-services/.local/deploy_artefacts.tar.gz
+#        dest: "{{ project_root }}"
+##        owner: "{{ user }}"
+##        group: "{{ group }}"
+#        mode: "0644"
+
+#    - name: Unzip etc remote artefact
+#      ansible.builtin.unarchive:
+#        src: "{{ project_root }}/deploy_artefacts.tar.gz"
+#        dest: "{{ project_root }}"
+#        remote_src: yes
 
 #
 ##   - name: Echo python version
