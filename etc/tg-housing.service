@@ -6,10 +6,10 @@ Requires=docker.service
 After=docker.service
 
 [Service]
-User=tg-housing
-Group=tg-housing
-ExecStart=/opt/tg-housing/service-start
-ExecStop=/opt/tg-housing/service-stop
+User=tg-housing-srv
+Group=tg-housing-srv
+ExecStart=/opt/tg-housing/bin/start
+ExecStop=/opt/tg-housing/bin/stop
 Restart=on-failure
 RestartSec=20
 TimeoutStopSec=180
