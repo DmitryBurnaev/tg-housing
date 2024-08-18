@@ -78,30 +78,14 @@ jobs:
             !etc/ansible/*
           retention-days: 7
 
-#
-#      - name: Build and push Docker image
-#        id: push
-#        uses: docker/build-push-action@v6
-#        with:
-#          context: .
-#          push: true
-#          tags: ${{ steps.meta.outputs.tags }}
-#          labels: ${{ steps.meta.outputs.labels }}
-
-#  build-artefacts:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-##      TODO: move to build job
-#      - name: Creating artifacts
-#        if: success()
-#        id: artefacts
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: deploy_artefacts
-#          path: ./etc
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
 #  deploy:
 #    needs:
