@@ -20,32 +20,20 @@ ssh ${TARGET_SERVER}
 
 # on the remote server
 sudo su
+
+# prepare user and group (NOTE: ID 1005 is imported ID for group)
+groupadd --system tg-housing-srv --gid 1005
+useradd --no-log-init --system --gid tg-housing-srv --uid 1005 tg-housing-srv
+
+chown tg-housing-srv:tg-housing-srv -R /opt/tg-housing/
+usermod -G docker tg-housing-srv
+
+# copy config to systemd
 ln -s ${TARGET_DIR}/tg-housing.service /etc/systemd/system/tg-housing.service
 systemctl daemon-reload
 systemctl enable tg-housing.service
 systemctl start tg-housing.service
+
+# see logs
+journalctl -u tg-housing
 ```
-
-
-nano <path_to_project>/resources/tg-housing.service
-
-# copy config to systemd
-mkdir ~/.config/systemd/user/
-cp <path_to_project>/resources/tg-housing.service ~/.config/systemd/user/
-cd ~/.config/systemd/user/
-chmod 754 . 
-
-# reload config
-systemctl --user daemon-reload
-
-# setup new service and enable him
-systemctl --user enable tg-housing.service
-
-# run new service
-systemctl --user start tg-housing.service
-
-# check state
-systemctl --user status tg-housing.service
-
-# need reload
-systemctl --user restart tg-housing.service
