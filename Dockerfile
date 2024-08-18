@@ -32,11 +32,12 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /root/.cache/* && rm -rf /root/.config/* && rm -rf /root/.local/*
 
-RUN groupadd --system tg_housing --gid 1005 && \
-    useradd --no-log-init --system --gid tg_housing --uid 1005 tg_housing
-USER tg_housing
+RUN groupadd --system tg-housing --gid 1005 && \
+    useradd --no-log-init --system --gid tg-housing --uid 1005 tg-housing
 
-COPY --from=code-layer --chown=tg_housing:tg_housing /usr/src .
+USER tg-housing
+
+COPY --from=code-layer --chown=tg-housing:tg-housing /usr/src .
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
