@@ -1,6 +1,6 @@
 #!/bin/sh
 
-WORKING_DIR=/opt/tg-housing-service/
+WORKING_DIR=/opt/tg-housing/
 
 if [ "${DEPLOY_MODE}" != "CI" ]
   then
@@ -8,8 +8,8 @@ if [ "${DEPLOY_MODE}" != "CI" ]
     export $(cat .env | grep -v ^# | xargs)
 fi
 
-echo "=== pulling image ${REGISTRY_URL}/${REGISTRY_SERVICE_NAME}:last ==="
-docker pull ${REGISTRY_URL}/${REGISTRY_SERVICE_NAME}:last
+echo "=== pulling image ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG} ==="
+docker pull ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG}
 
 echo "=== restarting service ==="
 systemctl service tg-housing restart

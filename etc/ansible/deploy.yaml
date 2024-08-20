@@ -2,28 +2,11 @@
   become: yes
   remote_user: "{{ user }}"
   tasks:
-    - name: Copy etc artefact to server
-      ansible.builtin.copy:
-        src: ./etc.artefact.tgz
-        dest: {{ project_root }}
-        owner: "{{ user }}"
-        group: "{{ user }}"
-        mode: "0644"
-
     - name: Unzip etc remote artefact
       ansible.builtin.unarchive:
         src: "{{ artefact_url }}"
         dest: "{{ project_root }}"
         remote_src: yes
 
-    - name: Pull image
-      shell: "docker pull {{ image_url }}:{{ image_tag }}"
-
-    - name: Restart service
-      shell: "systemctl service {{ service_name }} restart"
-
-    - name: Clean UP
-      shell: "echo y | docker image prune -a"
-
-    - name: Check Status
-      shell: "systemctl service {{ service_name }} status"
+    - name: Run deploy script
+      shell: "bash {{ project_root }}/bin/deploy"
