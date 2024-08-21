@@ -1,0 +1,10 @@
+- name: Test playbook
+  hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    - debug:
+        var: ansible_facts
