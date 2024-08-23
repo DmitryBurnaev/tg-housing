@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - 'main'
-      - 'feature/12-deploy'
+      - 'tech/12-deploy'
     tags:
       - 'v*'
 
