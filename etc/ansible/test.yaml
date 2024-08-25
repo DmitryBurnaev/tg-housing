@@ -7,7 +7,7 @@
     project_root: /opt/tg-housing
     user: deploy
     group: deploy
-    artefact_url: https://github.com/DmitryBurnaev/tg-housing/actions/runs/10406888669/artifacts/1816451778
+    artefact_url: https://github.com/DmitryBurnaev/tg-housing/actions/runs/10536418848/artifacts/1849906383
     image_url: ghcr.io/dmitryburnaev/tg-housing
     image_tag: feature-9-fix-ci
 
