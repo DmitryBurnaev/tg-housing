@@ -121,5 +121,5 @@ jobs:
           # Optional, additional flags to pass to ansible-playbook
           options: |
             --inventory .hosts
-            --extra-vars artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }}                     
+            --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}}"                     
             --verbose
