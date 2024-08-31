@@ -97,7 +97,7 @@ jobs:
           echo ${{ steps.artefacts.outputs.artifact-url }}
           echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           echo ${{needs.build.outputs.image_tag}}
-          echo ${{ GITHUB_WORKSPACE }}
+          echo ${{ env.GITHUB_WORKSPACE }}
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
