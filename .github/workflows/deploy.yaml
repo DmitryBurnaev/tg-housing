@@ -97,12 +97,12 @@ jobs:
           echo ${{ steps.artefacts.outputs.artifact-url }}
           echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           echo ${{needs.build.outputs.image_tag}}
-          echo ${{ env.GITHUB_WORKSPACE }}
+          echo ${{ github.workspace }}
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: /home/runner/work/tg-housing/etc/deploy.yaml
+          playbook: /home/runner/work/tg-housing/etc/ansible/deploy.yaml
           key: ${{secrets.SSH_PKEY}}
           inventory: |
             [all]
