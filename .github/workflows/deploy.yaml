@@ -102,7 +102,7 @@ jobs:
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: /home/runner/work/tg-housing/etc/ansible/deploy.yaml
+          playbook: ${{ github.workspace }}/etc/ansible/deploy.yaml
           key: ${{secrets.SSH_PKEY}}
           inventory: |
             [all]
