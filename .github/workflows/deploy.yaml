@@ -99,17 +99,26 @@ jobs:
           echo ${{needs.build.outputs.image_tag}}
           echo ${{ github.workspace }}
 
+      - name: Prepare inventory file
+        run: |
+          mkdir ~/.ssh
+          echo "[all]" > ${{ github.workspace }}/inventory.ini
+          echo "${{ secrets.PROD_SSH_HOST }}" >> ${{ github.workspace }}/inventory.ini
+          echo "${{ secrets.SSH_PKEY }}" > ${{ github.workspace }}/inventory.ini
+          cat ${{ github.workspace }}/inventory.ini
+
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: ${{ github.workspace }}/etc/ansible/deploy.yaml
           key: ${{secrets.SSH_PKEY}}
-          inventory: |
-            [all]
-            ${{ secrets.PROD_SSH_HOST }}
-          known_hosts: |
-            ${{ secrets.PROD_SSH_HOST }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+#          inventory: |
+#            [all]
+#            ${{ secrets.PROD_SSH_HOST }}
+#          known_hosts: |
+#            ${{ secrets.PROD_SSH_HOST }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
           options: |
             --inventory .hosts
             --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}}"                     
             --verbose
+            -o StrictHostKeyChecking=no
