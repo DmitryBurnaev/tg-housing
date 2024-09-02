@@ -101,11 +101,9 @@ jobs:
 
       - name: Prepare inventory file
         run: |
-          mkdir ~/.ssh
-          echo "[all]" > ${{ github.workspace }}/inventory.ini
-          echo "${{ secrets.PROD_SSH_HOST }}" >> ${{ github.workspace }}/inventory.ini
-          echo "${{ secrets.SSH_PKEY }}" > ${{ github.workspace }}/inventory.ini
-          cat ${{ github.workspace }}/inventory.ini
+          echo "[all]" > ${{ github.workspace }}/.hosts
+          echo "${{ secrets.PROD_SSH_HOST }}" >> ${{ github.workspace }}/.hosts
+          cat ${{ github.workspace }}/hosts
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
@@ -120,6 +118,7 @@ jobs:
           options: |
             --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}}"                     
             --verbose
+            --inventory .hosts
           configuration: |
             [defaults]
             host_key_checking = False
