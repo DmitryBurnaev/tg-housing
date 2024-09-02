@@ -103,7 +103,7 @@ jobs:
         run: |
           echo "[all]" > ${{ github.workspace }}/.hosts
           echo "${{ secrets.PROD_SSH_HOST }}" >> ${{ github.workspace }}/.hosts
-          cat ${{ github.workspace }}/hosts
+          cat ${{ github.workspace }}/.hosts
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
