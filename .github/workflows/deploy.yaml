@@ -102,7 +102,7 @@ jobs:
       - name: Prepare inventory file
         run: |
           echo "[all]" > ${{ github.workspace }}/.hosts
-          echo "${{ secrets.SSH_HOST }}" >> ${{ github.workspace }}/.hosts
+          echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/.hosts
           cat ${{ github.workspace }}/.hosts
 
       - name: Run deploy
