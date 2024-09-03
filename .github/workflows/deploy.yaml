@@ -108,7 +108,8 @@ jobs:
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: ${{ github.workspace }}/etc/ansible/deploy.yaml
+          playbook: deploy.yaml
+          directory: ${{ github.workspace }}/etc/ansible/
           key: ${{secrets.SSH_PKEY}}
 #          known_hosts: |
 #            ${{ secrets.PROD_SSH_HOST }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
