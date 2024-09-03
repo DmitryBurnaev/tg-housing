@@ -110,9 +110,6 @@ jobs:
         with:
           playbook: ${{ github.workspace }}/etc/ansible/deploy.yaml
           key: ${{secrets.SSH_PKEY}}
-#          inventory: |
-#            [all]
-#            ${{ secrets.PROD_SSH_HOST }}
 #          known_hosts: |
 #            ${{ secrets.PROD_SSH_HOST }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
           options: |
@@ -122,3 +119,4 @@ jobs:
           configuration: |
             [defaults]
             host_key_checking = False
+            ssh_args = -o StrictHostKeyChecking=False
