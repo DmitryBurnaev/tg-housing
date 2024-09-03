@@ -101,9 +101,9 @@ jobs:
 
       - name: Prepare inventory file
         run: |
-          echo "[all]" > ${{ github.workspace }}/.hosts
-          echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/.hosts
-          cat ${{ github.workspace }}/.hosts
+          echo "[all]" > ${{ github.workspace }}/etc/ansible/.hosts
+          echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/etc/ansible/.hosts
+          cat ${{ github.workspace }}/etc/ansible/.hosts
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
