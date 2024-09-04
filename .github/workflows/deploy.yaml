@@ -103,7 +103,6 @@ jobs:
         run: |
           echo "[all]" > ${{ github.workspace }}/etc/ansible/.hosts
           echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/etc/ansible/.hosts
-          cat ${{ github.workspace }}/etc/ansible/.hosts
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
@@ -111,13 +110,13 @@ jobs:
           playbook: deploy.yaml
           directory: ${{ github.workspace }}/etc/ansible/
           key: ${{secrets.SSH_PKEY}}
-          known_hosts: |
-            ${{ secrets.SSH_HOST }} ssh-ed25519 SHA256:yyyZVwHL6Z1IggtuL+jFWiMPHv7YtydSF1Zsj4BlwuY
+#          known_hosts: |
+#            ${{ secrets.SSH_HOST }} ssh-ed25519 SHA256:yyyZVwHL6Z1IggtuL+jFWiMPHv7YtydSF1Zsj4BlwuY
           options: |
             --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}}"                     
             --verbose
             --inventory .hosts
-#          configuration: |
-#            [defaults]
-#            host_key_checking = False
+          configuration: |
+            [defaults]
+            host_key_checking = False
 #            ssh_args = -o StrictHostKeyChecking=False
