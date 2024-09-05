@@ -110,8 +110,6 @@ jobs:
           playbook: deploy.yaml
           directory: ${{ github.workspace }}/etc/ansible/
           key: ${{secrets.SSH_PKEY}}
-#          known_hosts: |
-#            ${{ secrets.SSH_HOST }} ssh-ed25519 SHA256:yyyZVwHL6Z1IggtuL+jFWiMPHv7YtydSF1Zsj4BlwuY
           options: |
             --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}}"                     
             --verbose
@@ -119,4 +117,4 @@ jobs:
           configuration: |
             [defaults]
             host_key_checking = False
-#            ssh_args = -o StrictHostKeyChecking=False
+            ssh_args = -o StrictHostKeyChecking=False
