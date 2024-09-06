@@ -104,14 +104,24 @@ jobs:
           echo "[all]" > ${{ github.workspace }}/etc/ansible/.hosts
           echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/etc/ansible/.hosts
 
+      - name: Prepare SSH key
+        run: |
+          mkdir ~/.ssh
+          echo "${{ secrets.SSH_PKEY }}" > ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
+
+#      - name: Copy project files
+#        run: |
+#          scp -o StrictHostKeyChecking=no ${{ github.workspace }}/etc/ansible/.hosts ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.PROD_PROJECT_ROOT }}
+
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yaml
           directory: ${{ github.workspace }}/etc/ansible/
-          key: ${{secrets.SSH_PKEY}}
+#          key: ${{secrets.SSH_PKEY}}
           options: |
-            --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}}"                     
+            --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"                     
             --verbose
             --inventory .hosts
           configuration: |
