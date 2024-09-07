@@ -1,0 +1,6 @@
+#!/bin/bash
+NOW_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+echo "=== Backup TG housing service's  at ${NOW_TIME} ==="
+mkdir "backups" -p
+tar -czf backups/backup-${NOW_TIME}.tar.gz *
