@@ -11,11 +11,29 @@
     - debug:
         var: ansible_facts
 
-    - name: Unzip etc remote artefact
-      ansible.builtin.unarchive:
-        src: "{{ artefact_url }}"
-        dest: "{{ project_root }}"
-        remote_src: yes
+    - name: Bin directory exists checking
+      stat:
+        path: "{{ project_root }}/bin"
+      register: bin_directory_register
 
-    - name: Run deploy script
+    - name: Run backup
+      shell: "bash {{ project_root }}/bin/backup"
+      when:
+        bin_directory_register.stat.exists:
+
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: /srv/myfiles/foo.conf
+        dest: "{{ project_root }}/tg-housing-artefact.tar.gz"
+        owner: "{{ ssh_user }}"
+        group: "{{ ssh_user }}"
+        mode: "0644"
+
+    - name: Unzip artefact
+      ansible.builtin.unarchive:
+        src: "{{ project_root }}/tg-housing-artefact.tar.gz"
+        dest: "{{ project_root }}"
+        remote_src: no
+
+    - name: Run deploy
       shell: "bash {{ project_root }}/bin/deploy"

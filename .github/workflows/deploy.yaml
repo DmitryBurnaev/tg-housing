@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  ARTEFACT_NAME: ${{ github.repository }}-artefact
 
 jobs:
 #  test:
@@ -42,6 +43,7 @@ jobs:
 
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
+      artefact_path: ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}.tar.gz
 
     steps:
       - name: Checkout repository
@@ -73,6 +75,11 @@ jobs:
 #          tags: ${{ steps.meta.outputs.tags }}
 #          labels: ${{ steps.meta.outputs.labels }}
 
+      - name: Create artefact
+        run: |
+          cd ect
+          tar -czf ${{ outputs.artefact_path }} *
+
   deploy:
     needs: [build]
     runs-on: ubuntu-latest
@@ -81,47 +88,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Creating artifacts
-        if: success()
-        id: artefacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-artefacts
-          path: |
-            etc
-            !etc/ansible/*
-          retention-days: 21
-
       - name: Debug
         run: |
           echo ${{ steps.artefacts.outputs.artifact-url }}
           echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           echo ${{needs.build.outputs.image_tag}}
           echo ${{ github.workspace }}
+          echo ${{ needs.build.outputs.artefact_path }}
 
       - name: Prepare inventory file
         run: |
           echo "[all]" > ${{ github.workspace }}/etc/ansible/.hosts
           echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/etc/ansible/.hosts
 
-      - name: Prepare SSH key
+      - name: Prepare SSH file
         run: |
           mkdir ~/.ssh
           echo "${{ secrets.SSH_PKEY }}" > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
-#      - name: Copy project files
-#        run: |
-#          scp -o StrictHostKeyChecking=no ${{ github.workspace }}/etc/ansible/.hosts ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.PROD_PROJECT_ROOT }}
+      - name: Download etc build
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy_dist
 
       - name: Run deploy
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yaml
           directory: ${{ github.workspace }}/etc/ansible/
-#          key: ${{secrets.SSH_PKEY}}
           options: |
-            --extra-vars "artefact_url=${{ steps.artefacts.outputs.artifact-url }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"                     
+            --extra-vars "artefact_path=${{ needs.build.outputs.artefact_path }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"                     
             --verbose
             --inventory .hosts
           configuration: |
