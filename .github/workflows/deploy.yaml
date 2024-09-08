@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ARTEFACT_NAME: tg-housing-deploy-artefact.tar.gz
+  ARTEFACT_NAME: tg-housing-artefact.tar.gz
 
 jobs:
 #  test:
