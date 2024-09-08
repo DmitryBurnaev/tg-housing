@@ -15,15 +15,15 @@
       stat:
         path: "{{ project_root }}/bin/backup"
       register: bin_backup_register
-
-    - name: Run backup
-      shell: "bash {{ project_root }}/bin/backup"
-      when:
-        bin_backup_register.stat.exists:
+#
+#    - name: Run backup
+#      shell: "bash {{ project_root }}/bin/backup"
+#      when:
+#        bin_backup_register.stat.exists:
 
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
-        src: /srv/myfiles/foo.conf
+        src: "{{ artefact_path }}"
         dest: "{{ project_root }}/tg-housing-artefact.tar.gz"
         owner: "{{ ssh_user }}"
         group: "{{ ssh_user }}"
