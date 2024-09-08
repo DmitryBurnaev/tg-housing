@@ -23,7 +23,7 @@
 
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
-        remote_src: "{{ artefact_path }}"
+        src: "{{ artefact_path }}"
         dest: "{{ project_root }}/tg-housing-artefact.tar.gz"
         owner: "{{ ssh_user }}"
         group: "{{ ssh_user }}"
