@@ -93,6 +93,7 @@ jobs:
           echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           echo ${{needs.build.outputs.image_tag}}
           echo ${{ github.workspace }}
+          ls -lah ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}
 
       - name: Prepare inventory file
         run: |
