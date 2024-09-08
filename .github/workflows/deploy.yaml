@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ARTEFACT_NAME: ${{ github.repository }}-artefact
+  ARTEFACT_NAME: ${{ github.repository }}-artefact.tar.gz
 
 jobs:
 #  test:
@@ -43,7 +43,6 @@ jobs:
 
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
-      artefact_path: ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}.tar.gz
 
     steps:
       - name: Checkout repository
@@ -78,7 +77,7 @@ jobs:
       - name: Create artefact
         run: |
           cd ect
-          tar -czf ${{ build.outputs.artefact_path }} *
+          tar -czf ${{ github.workspace }}/${{ env.ARTEFACT_NAME }} *
 
   deploy:
     needs: [build]
@@ -94,7 +93,6 @@ jobs:
           echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           echo ${{needs.build.outputs.image_tag}}
           echo ${{ github.workspace }}
-          echo ${{ needs.build.outputs.artefact_path }}
 
       - name: Prepare inventory file
         run: |
@@ -118,7 +116,7 @@ jobs:
           playbook: deploy.yaml
           directory: ${{ github.workspace }}/etc/ansible/
           options: |
-            --extra-vars "artefact_path=${{ needs.build.outputs.artefact_path }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"                     
+            --extra-vars "artefact_path=${{ github.workspace }}/${{ env.ARTEFACT_NAME }} project_root=${{ secrets.PROD_PROJECT_ROOT }} image_tag=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"                     
             --verbose
             --inventory .hosts
           configuration: |
