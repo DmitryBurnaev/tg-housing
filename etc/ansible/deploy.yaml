@@ -11,15 +11,15 @@
     - debug:
         var: ansible_facts
 
-    - name: Bin directory exists checking
+    - name: Backup script exists
       stat:
-        path: "{{ project_root }}/bin"
-      register: bin_directory_register
+        path: "{{ project_root }}/bin/backup"
+      register: bin_backup_register
 
     - name: Run backup
       shell: "bash {{ project_root }}/bin/backup"
       when:
-        bin_directory_register.stat.exists:
+        bin_backup_register.stat.exists:
 
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
