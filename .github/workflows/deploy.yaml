@@ -78,7 +78,7 @@ jobs:
       - name: Create artefact
         run: |
           cd ect
-          tar -czf ${{ outputs.artefact_path }} *
+          tar -czf ${{ build.outputs.artefact_path }} *
 
   deploy:
     needs: [build]
