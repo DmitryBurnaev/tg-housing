@@ -74,11 +74,6 @@ jobs:
 #          tags: ${{ steps.meta.outputs.tags }}
 #          labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Create artefact
-        run: |
-          cd etc
-          tar -czf ${{ github.workspace }}/${{ env.ARTEFACT_NAME }} *
-
   deploy:
     needs: [build]
     runs-on: ubuntu-latest
@@ -86,6 +81,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Create artefact
+        run: |
+          cd etc
+          tar -czf ${{ github.workspace }}/${{ env.ARTEFACT_NAME }} *
 
       - name: Debug
         run: |
