@@ -15,25 +15,26 @@
       stat:
         path: "{{ project_root }}/bin/backup"
       register: bin_backup_register
-#
-#    - name: Run backup
-#      shell: "bash {{ project_root }}/bin/backup"
-#      when:
-#        bin_backup_register.stat.exists:
+
+    - name: Run backup
+      shell: "bash {{ project_root }}/bin/backup"
+      when:
+        bin_backup_register.stat.exists:
 
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
         src: "{{ artefact_path }}"
-        dest: "{{ project_root }}/tg-housing-artefact.tar.gz"
+        dest: "/tmp/tg-housing-artefact.tar.gz"
         owner: "{{ ssh_user }}"
         group: "{{ ssh_user }}"
         mode: "0644"
 
     - name: Unzip artefact
       ansible.builtin.unarchive:
-        src: "{{ project_root }}/tg-housing-artefact.tar.gz"
+        src: "/tmp/tg-housing-artefact.tar.gz"
         dest: "{{ project_root }}"
-        remote_src: no
+        remote_src: true
 
+#    TODO: rm /tmp/tg-housing-artefact.tar.gz
     - name: Run deploy
       shell: "bash {{ project_root }}/bin/deploy"
