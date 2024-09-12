@@ -38,3 +38,8 @@
 #    TODO: rm /tmp/tg-housing-artefact.tar.gz
     - name: Run deploy
       shell: "bash {{ project_root }}/bin/deploy"
+
+    - name: Remove artefact
+      ansible.builtin.file:
+        path: "/tmp/tg-housing-artefact.tar.gz"
+        state: absent
