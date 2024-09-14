@@ -18,8 +18,7 @@
 
     - name: Run backup
       shell: "bash {{ project_root }}/bin/backup"
-      when:
-        bin_backup_register.stat.exists:
+      when: bin_backup_register.stat.exists
 
     - name: Copy file with owner and permissions
       ansible.builtin.copy:
@@ -35,7 +34,20 @@
         dest: "{{ project_root }}"
         remote_src: true
 
-#    TODO: rm /tmp/tg-housing-artefact.tar.gz
+    - name: Env file exists
+      stat:
+        path: "{{ project_root }}/.env"
+      register: env_file_register
+
+    - name: Prepare envs
+      ansible.builtin.shell: |
+        cp {{ project_root }}/env.template {{ project_root }}/.env &&       
+        echo REGISTRY_URL={{registry_url}} >> {{ project_root }}/.env &&
+        echo PWD={{ project_root }} >> {{ project_root }}/.env
+      args:
+        executable: /bin/bash
+#      when: not env_file_register.stat.exists
+
     - name: Run deploy
       shell: "bash {{ project_root }}/bin/deploy"
 
