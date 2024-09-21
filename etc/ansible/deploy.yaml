@@ -30,6 +30,7 @@
 
     - name: Unzip artefact
       shell: |
+        rm -rf /tmp/tg-housing-service
         mkdir /tmp/tg-housing-service
         tar -xvf /tmp/tg-housing-artefact.tar.gz -C /tmp/tg-housing-service
         cp -r /tmp/tg-housing-service/* {{ project_root }}/
@@ -48,11 +49,6 @@
       args:
         executable: /bin/bash
       when: not env_file_register.stat.exists
-
-    - name: Run deploy
-      shell: |
-        cd {{ project_root }}
-        bash bin/deploy
 
     - name: Remove artefact
       ansible.builtin.file:
