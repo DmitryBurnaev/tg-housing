@@ -132,4 +132,4 @@ jobs:
             export DEPLOY_MODE=CI
             export REGISTRY_URL=${{ env.REGISTRY }}
             cd ${{ secrets.PROD_PROJECT_ROOT }}
-            sh deploy.sh
+            sh bin/deploy
