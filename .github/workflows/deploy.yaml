@@ -107,7 +107,7 @@ jobs:
           echo "${{ secrets.SSH_PKEY }}" > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
-      - name: Run deploy
+      - name: Delivery Updates
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: deploy.yaml
@@ -120,3 +120,16 @@ jobs:
             [defaults]
             host_key_checking = False
             ssh_args = -o StrictHostKeyChecking=False
+
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PKEY }}
+          script: |
+            export DEPLOY_MODE=CI
+            export REGISTRY_URL=${{ env.REGISTRY }}
+            cd ${{ secrets.PROD_PROJECT_ROOT }}
+            sh deploy.sh
