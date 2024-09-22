@@ -110,10 +110,10 @@ jobs:
       - name: Delivery Updates
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: deploy.yaml
+          playbook: delivery.yaml
           directory: ${{ github.workspace }}/etc/ansible/
           options: |
-            --extra-vars "artefact_path=${{ github.workspace }}/${{ env.ARTEFACT_NAME }} project_root=/opt/tg-housing-test registry_url=${{ env.REGISTRY }} ssh_user=${{ secrets.SSH_USER }}"                     
+            --extra-vars "artefact_path=${{ github.workspace }}/${{ env.ARTEFACT_NAME }} project_root=${{ secrets.PROD_PROJECT_ROOT }} registry_url=${{ env.REGISTRY }} ssh_user=${{ secrets.SSH_USER }}"                     
             --verbose
             --inventory .hosts
           configuration: |
@@ -122,7 +122,7 @@ jobs:
             ssh_args = -o StrictHostKeyChecking=False
 
       - name: Deploy
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
