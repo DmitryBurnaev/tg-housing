@@ -122,7 +122,7 @@ jobs:
             ssh_args = -o StrictHostKeyChecking=False
 
       - name: Deploy
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
