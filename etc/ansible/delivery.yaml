@@ -33,7 +33,7 @@
         rm -rf /tmp/tg-housing-service
         mkdir /tmp/tg-housing-service
         tar -xvf /tmp/tg-housing-artefact.tar.gz -C /tmp/tg-housing-service
-        cp -r /tmp/tg-housing-service/* {{ project_root }}/
+        cp -ru /tmp/tg-housing-service/* {{ project_root }}/
         rm -rf /tmp/tg-housing-service
 
     - name: Env file exists
