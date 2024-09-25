@@ -15,10 +15,13 @@ echo "=== pulling image ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG} ==="
 docker pull ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG}
 
 echo "=== restarting service ==="
-systemctl service tg-housing restart
+docker compose down
+docker compose up -d
+#systemctl service tg-housing restart
 
 echo "=== clearing ==="
-echo y | docker image prune -a
+#echo y | docker image prune -a
 
 echo "=== check status ==="
-systemctl service tg-housing status
+docker ps | grep "tg-housing"
+#systemctl service tg-housing status
