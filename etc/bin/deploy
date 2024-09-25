@@ -1,6 +1,6 @@
 #!/bin/sh
 
-WORKING_DIR=/opt/tg-housing/
+export WORKING_DIR=/opt/tg-housing/
 
 if [ "${DEPLOY_MODE}" != "CI" ]
   then
@@ -10,8 +10,8 @@ fi
 
 echo "NEW DEPLOY"
 
-echo "=== pulling image ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG} ==="
-docker pull ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG}
+echo "=== pulling image ${DOCKER_IMAGE_URL}:${DOCKER_IMAGE_TAG} ==="
+docker pull ${DOCKER_IMAGE_URL}:${DOCKER_IMAGE_TAG}
 
 echo "=== restarting service ==="
 docker compose down

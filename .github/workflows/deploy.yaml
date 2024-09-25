@@ -130,6 +130,7 @@ jobs:
           key: ${{ secrets.SSH_PKEY }}
           script: |
             export DEPLOY_MODE=CI
-            export REGISTRY_URL=${{ env.REGISTRY }}
+            export DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            export DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}
             cd ${{ secrets.PROD_PROJECT_ROOT }}
             sh bin/deploy
