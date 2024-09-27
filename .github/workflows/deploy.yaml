@@ -62,6 +62,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
+            type=raw,event=branch,value=latest
             type=semver,pattern={{version}}
             type=ref,event=tag,value=latest
 
@@ -91,8 +92,10 @@ jobs:
       - name: Debug
         run: |
           echo ${{ steps.artefacts.outputs.artifact-url }}
-          echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          echo ${{needs.build.outputs.image_tag}}
+          echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          echo DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}
+#          ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          echo JSON=${{ fromJSON(steps.meta.outputs.json) }}
           echo ${{ github.workspace }}
           ls -lah ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}
 
@@ -131,6 +134,6 @@ jobs:
           script: |
             export DEPLOY_MODE=CI
             export DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            export DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}
+            export DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}            
             cd ${{ secrets.PROD_PROJECT_ROOT }}
             sh bin/deploy

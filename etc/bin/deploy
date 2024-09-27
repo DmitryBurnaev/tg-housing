@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 export WORKING_DIR=/opt/tg-housing/
