@@ -94,8 +94,6 @@ jobs:
           echo ${{ steps.artefacts.outputs.artifact-url }}
           echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           echo DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}
-#          ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          echo JSON=${{ fromJSON(steps.meta.outputs.json) }}
           echo ${{ github.workspace }}
           ls -lah ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}
 
@@ -134,6 +132,6 @@ jobs:
           script: |
             export DEPLOY_MODE=CI
             export DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            export DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}            
+            export DOCKER_IMAGE_TAG=latest            
             cd ${{ secrets.PROD_PROJECT_ROOT }}
             sh bin/deploy
