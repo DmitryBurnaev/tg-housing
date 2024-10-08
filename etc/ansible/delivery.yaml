@@ -50,7 +50,7 @@
         executable: /bin/bash
       when: not env_file_register.stat.exists
 
-    - name: Remove artefact
-      ansible.builtin.file:
-        path: "/tmp/tg-housing-artefact.tar.gz"
-        state: absent
+#    - name: Remove artefact
+#      ansible.builtin.file:
+#        path: "/tmp/tg-housing-artefact.tar.gz"
+#        state: absent

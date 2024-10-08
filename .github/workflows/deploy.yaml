@@ -62,6 +62,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
+            type=raw,event=branch,value=latest
             type=semver,pattern={{version}}
             type=ref,event=tag,value=latest
 
@@ -91,8 +92,8 @@ jobs:
       - name: Debug
         run: |
           echo ${{ steps.artefacts.outputs.artifact-url }}
-          echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          echo ${{needs.build.outputs.image_tag}}
+          echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          echo DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}
           echo ${{ github.workspace }}
           ls -lah ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}
 
@@ -130,6 +131,7 @@ jobs:
           key: ${{ secrets.SSH_PKEY }}
           script: |
             export DEPLOY_MODE=CI
-            export REGISTRY_URL=${{ env.REGISTRY }}
+            export DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            export DOCKER_IMAGE_TAG=latest            
             cd ${{ secrets.PROD_PROJECT_ROOT }}
             sh bin/deploy
