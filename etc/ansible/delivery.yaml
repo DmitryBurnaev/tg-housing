@@ -28,13 +28,30 @@
         group: "{{ ssh_user }}"
         mode: "0644"
 
-    - name: Unzip artefact
+    - name: Prepare for unzip
       shell: |
         rm -rf /tmp/tg-housing-service
         mkdir /tmp/tg-housing-service
-        tar -xvf /tmp/tg-housing-artefact.tar.gz -C /tmp/tg-housing-service
-        cp -ru /tmp/tg-housing-service/* {{ project_root }}/
-        rm -rf /tmp/tg-housing-service
+
+    - name: Unzip artefact
+      ansible.builtin.unarchive:
+        src: "/tmp/tg-housing-artefact.tar.gz"
+        dest: "/tmp/tg-housing-service"
+        remote_src: yes
+
+    - name: Copy files from artefact
+      ansible.builtin.copy:
+        src: "/tmp/tg-housing-service/"
+        dest: "{{ project_root }}/"
+        remote_src: yes
+
+#    - name: Unzip artefact
+#      shell: |
+#        rm -rf /tmp/tg-housing-service
+#        mkdir /tmp/tg-housing-service
+#        tar -xvf /tmp/tg-housing-artefact.tar.gz -C /tmp/tg-housing-service
+#        cp -ru /tmp/tg-housing-service/* {{ project_root }}/
+#        rm -rf /tmp/tg-housing-service
 
     - name: Env file exists
       stat:
@@ -44,7 +61,7 @@
     - name: Prepare envs
       ansible.builtin.shell: |
         cp {{ project_root }}/env.template {{ project_root }}/.env &&       
-        echo REGISTRY_URL={{registry_url}} >> {{ project_root }}/.env &&
+        echo DOCKER_IMAGE={{docker_image}} >> {{ project_root }}/.env &&
         echo PWD={{ project_root }} >> {{ project_root }}/.env
       args:
         executable: /bin/bash

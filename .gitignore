@@ -17,3 +17,4 @@ venv.bak/
 .idea/
 .data/
 .vscode/
+.misc/
