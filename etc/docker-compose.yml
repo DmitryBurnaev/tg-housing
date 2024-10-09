@@ -1,7 +1,6 @@
 services:
   bot:
-    image:
-      ${DOCKER_IMAGE_URL}:${DOCKER_IMAGE_TAG}
+    image: ${DOCKER_IMAGE}
     env_file:
       - .env
     environment:

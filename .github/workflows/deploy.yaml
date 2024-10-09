@@ -93,9 +93,8 @@ jobs:
         run: |
           echo ${{ steps.artefacts.outputs.artifact-url }}
           echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          echo DOCKER_IMAGE_TAG=${{needs.build.outputs.image_tag}}
+          echo DOCKER_IMAGE=${{needs.build.outputs.image_tag}}
           echo ${{ github.workspace }}
-          ls -lah ${{ github.workspace }}/${{ env.ARTEFACT_NAME }}
 
       - name: Prepare inventory file
         run: |
@@ -131,7 +130,6 @@ jobs:
           key: ${{ secrets.SSH_PKEY }}
           script: |
             export DEPLOY_MODE=CI
-            export DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            export DOCKER_IMAGE_TAG=latest            
+            export DOCKER_IMAGE=${{needs.build.outputs.image_tag}}
             cd ${{ secrets.PROD_PROJECT_ROOT }}
             sh bin/deploy
