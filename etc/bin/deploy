@@ -11,8 +11,8 @@ fi
 
 echo "NEW DEPLOY"
 
-echo "=== pulling image ${DOCKER_IMAGE_URL}:${DOCKER_IMAGE_TAG} ==="
-docker pull ${DOCKER_IMAGE_URL}:${DOCKER_IMAGE_TAG}
+echo "=== pulling image ${DOCKER_IMAGE} ==="
+docker pull ${DOCKER_IMAGE}
 
 echo "=== restarting service ==="
 docker compose down
