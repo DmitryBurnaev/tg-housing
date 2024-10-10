@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
+set -e
 
-WORKING_DIR=/opt/tg-housing-service/
+export WORKING_DIR=/opt/tg-housing/
 
 if [ "${DEPLOY_MODE}" != "CI" ]
   then
@@ -8,14 +9,19 @@ if [ "${DEPLOY_MODE}" != "CI" ]
     export $(cat .env | grep -v ^# | xargs)
 fi
 
-echo "=== pulling image ${REGISTRY_URL}/${REGISTRY_SERVICE_NAME}:last ==="
-docker pull ${REGISTRY_URL}/${REGISTRY_SERVICE_NAME}:last
+echo "NEW DEPLOY"
+
+echo "=== pulling image ${DOCKER_IMAGE} ==="
+docker pull ${DOCKER_IMAGE}
 
 echo "=== restarting service ==="
-systemctl service tg-housing restart
+docker compose down
+docker compose up -d
+#systemctl service tg-housing restart
 
 echo "=== clearing ==="
-echo y | docker image prune -a
+#echo y | docker image prune -a
 
 echo "=== check status ==="
-systemctl service tg-housing status
+docker ps | grep "tg-housing"
+#systemctl service tg-housing status

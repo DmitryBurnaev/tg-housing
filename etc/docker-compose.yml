@@ -1,7 +1,6 @@
 services:
   bot:
-    image:
-      ${REGISTRY_URL}:${REGISTRY_SERVICE_TAG}
+    image: ${DOCKER_IMAGE}
     env_file:
       - .env
     environment:
