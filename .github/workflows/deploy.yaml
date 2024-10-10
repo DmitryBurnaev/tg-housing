@@ -113,7 +113,7 @@ jobs:
           playbook: delivery.yaml
           directory: ${{ github.workspace }}/etc/ansible/
           options: |
-            --extra-vars "artefact_path=${{ github.workspace }}/${{ env.ARTEFACT_NAME }} project_root=${{ secrets.PROD_PROJECT_ROOT }} registry_url=${{ env.REGISTRY }} ssh_user=${{ secrets.SSH_USER }}"                     
+            --extra-vars "artefact_path=${{ github.workspace }}/${{ env.ARTEFACT_NAME }} project_root=${{ secrets.PROD_PROJECT_ROOT }} docker_image=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"                     
             --verbose
             --inventory .hosts
           configuration: |
