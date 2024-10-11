@@ -26,7 +26,7 @@
         dest: "/tmp/tg-housing-artefact.tar.gz"
         owner: "{{ ssh_user }}"
         group: "{{ ssh_user }}"
-        mode: "0644"
+        mode: "0660"
 
     - name: Prepare for unzip
       shell: |
@@ -44,6 +44,7 @@
         src: "/tmp/tg-housing-service/"
         dest: "{{ project_root }}/"
         remote_src: yes
+        mode: "0660"
 
 #    - name: Unzip artefact
 #      shell: |
