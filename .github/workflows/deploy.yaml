@@ -89,12 +89,12 @@ jobs:
           cd etc
           tar -czf ${{ github.workspace }}/${{ env.ARTEFACT_NAME }} *
 
-      - name: Debug
-        run: |
-          echo ${{ steps.artefacts.outputs.artifact-url }}
-          echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          echo DOCKER_IMAGE=${{needs.build.outputs.image_tag}}
-          echo ${{ github.workspace }}
+#      - name: Debug
+#        run: |
+#          echo ${{ steps.artefacts.outputs.artifact-url }}
+#          echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+#          echo DOCKER_IMAGE=${{needs.build.outputs.image_tag}}
+#          echo ${{ github.workspace }}
 
       - name: Prepare inventory file
         run: |
