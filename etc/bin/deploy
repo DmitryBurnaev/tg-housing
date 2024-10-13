@@ -9,9 +9,7 @@ if [ "${DEPLOY_MODE}" != "CI" ]
     export $(cat .env | grep -v ^# | xargs)
 fi
 
-echo "NEW DEPLOY"
-
-echo "=== pulling image ${DOCKER_IMAGE} ==="
+cho "=== pulling image ${DOCKER_IMAGE} ==="
 docker pull ${DOCKER_IMAGE}
 
 echo "=== restarting service ==="
