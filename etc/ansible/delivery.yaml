@@ -40,11 +40,15 @@
         dest: "/tmp/tg-housing-service"
         remote_src: yes
 
-    - name: Copy files from artefact
-      ansible.builtin.copy:
-        src: "/tmp/tg-housing-service/"
-        dest: "{{ project_root }}/"
-        remote_src: yes
+#    - name: Copy files from artefact
+#      ansible.builtin.copy:
+#        src: "/tmp/tg-housing-service/"
+#        dest: "{{ project_root }}/"
+#        remote_src: yes
+
+    - name: Copy files to project_root
+      shell: |
+        cp -r /tmp/tg-housing-service/* {{ project_root }}
 
 #    - name: Unzip artefact
 #      shell: |
