@@ -9,7 +9,7 @@ if [ "${DEPLOY_MODE}" != "CI" ]
     export $(cat .env | grep -v ^# | xargs)
 fi
 
-cho "=== pulling image ${DOCKER_IMAGE} ==="
+echo "=== pulling image ${DOCKER_IMAGE} ==="
 docker pull ${DOCKER_IMAGE}
 
 echo "=== restarting service ==="
