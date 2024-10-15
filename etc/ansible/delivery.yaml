@@ -50,14 +50,6 @@
       shell: |
         cp -r /tmp/tg-housing-service/* {{ project_root }}
 
-#    - name: Unzip artefact
-#      shell: |
-#        rm -rf /tmp/tg-housing-service
-#        mkdir /tmp/tg-housing-service
-#        tar -xvf /tmp/tg-housing-artefact.tar.gz -C /tmp/tg-housing-service
-#        cp -ru /tmp/tg-housing-service/* {{ project_root }}/
-#        rm -rf /tmp/tg-housing-service
-
     - name: Env file exists
       stat:
         path: "{{ project_root }}/.env"
@@ -72,6 +64,7 @@
         executable: /bin/bash
       when: not env_file_register.stat.exists
 
+# TODO: Uncomment in future
 #    - name: Remove artefact
 #      ansible.builtin.file:
 #        path: "/tmp/tg-housing-artefact.tar.gz"
