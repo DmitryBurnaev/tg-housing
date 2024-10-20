@@ -89,18 +89,6 @@ jobs:
           cd etc
           tar -czf ${{ github.workspace }}/${{ env.ARTEFACT_NAME }} *
 
-#      - name: Debug
-#        run: |
-#          echo ${{ steps.artefacts.outputs.artifact-url }}
-#          echo DOCKER_IMAGE_URL=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-#          echo DOCKER_IMAGE=${{needs.build.outputs.image_tag}}
-#          echo ${{ github.workspace }}
-
-#      - name: Prepare inventory file
-#        run: |
-#          echo "[all]" > ${{ github.workspace }}/etc/ansible/.hosts
-#          echo "${{ secrets.SSH_HOST }} ansible_port=${{ secrets.SSH_PORT }}" >> ${{ github.workspace }}/etc/ansible/.hosts
-
       - name: Prepare SSH file
         run: |
           mkdir ~/.ssh
@@ -114,20 +102,6 @@ jobs:
           scp -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} ./etc/bin/start ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.PROD_PROJECT_ROOT }}/bin/start
           scp -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} ./etc/bin/stop ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.PROD_PROJECT_ROOT }}/bin/stop
           scp -o StrictHostKeyChecking=no -P ${{ secrets.SSH_PORT }} ./.env.template ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.PROD_PROJECT_ROOT }}/.env.template
-
-#      - name: Delivery Updates
-#        uses: dawidd6/action-ansible-playbook@v2
-#        with:
-#          playbook: delivery.yaml
-#          directory: ${{ github.workspace }}/etc/ansible/
-#          options: |
-#            --extra-vars "artefact_path=${{ github.workspace }}/${{ env.ARTEFACT_NAME }} project_root=${{ secrets.PROD_PROJECT_ROOT }} docker_image=${{needs.build.outputs.image_tag}} ssh_user=${{ secrets.SSH_USER }}"
-#            --verbose
-#            --inventory .hosts
-#          configuration: |
-#            [defaults]
-#            host_key_checking = False
-#            ssh_args = -o StrictHostKeyChecking=False
 
       - name: Deploy
         uses: appleboy/ssh-action@master
