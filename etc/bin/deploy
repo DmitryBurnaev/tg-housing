@@ -10,11 +10,11 @@ echo "=== pulling image ${DOCKER_IMAGE} ==="
 docker pull ${DOCKER_IMAGE}
 
 echo "=== restarting service ==="
-systemctl restart tg-housing.service
+sudo systemctl restart tg-housing.service
 
 echo "=== clearing ==="
 echo y | docker image prune -a
 
 echo "=== check status ==="
-systemctl status tg-housing.service
+sudo systemctl status tg-housing.service
 docker ps | grep "tg-housing"
