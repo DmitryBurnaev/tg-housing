@@ -16,5 +16,8 @@ echo "=== clearing ==="
 echo y | docker image prune -a
 
 echo "=== check status ==="
-sudo systemctl status tg-housing.service
-docker ps | grep "tg-housing"
+sudo systemctl show -p ActiveState --value tg-housing
+
+echo "=== show containers ==="
+docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Status}}\t|" | grep tg-housing
+echo "==="
