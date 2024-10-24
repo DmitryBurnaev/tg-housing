@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+#set -e
 
 export WORKING_DIR=/opt/tg-housing/
 
