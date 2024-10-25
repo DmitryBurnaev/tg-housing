@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'tech/12-deploy'
     tags:
       - 'v*'
 
@@ -13,26 +12,26 @@ env:
   ARTEFACT_NAME: tg-housing-artefact.tar.gz
 
 jobs:
-#  test:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#
-#      - name: Prepare .env file
-#        env:
-#          PWD: $(PWD)
-#        run: |
-#          cp .env.template .env
-#          env >> .env
-#
-#      - name: Build image
-#        run: docker compose build test
-#
-#      - name: Run tests
-#        run: docker compose up --exit-code-from test test
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Prepare .env file
+        env:
+          PWD: $(PWD)
+        run: |
+          cp .env.template .env
+          env >> .env
+
+      - name: Build image
+        run: docker compose build test
+
+      - name: Run tests
+        run: docker compose up --exit-code-from test test
 
   build:
-#    needs: [test]
+    needs: [test]
     runs-on: ubuntu-latest
 
     permissions:
@@ -48,13 +47,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-#      - name: Log in to the Container registry
-#        uses: docker/login-action@v3
-#        with:
-#          registry: ${{ env.REGISTRY }}
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-#
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -66,14 +65,14 @@ jobs:
             type=semver,pattern={{version}}
             type=ref,event=tag,value=latest
 
-#      - name: Build and push Docker image
-#        id: push
-#        uses: docker/build-push-action@v6
-#        with:
-#          context: .
-#          push: true
-#          tags: ${{ steps.meta.outputs.tags }}
-#          labels: ${{ steps.meta.outputs.labels }}
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     needs: [build]
