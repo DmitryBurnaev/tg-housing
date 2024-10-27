@@ -9,7 +9,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  DOCKER_IMAGE: ghcr.io/${{ env.IMAGE_NAME }}:latest
+  IMAGE_NAME: ${{ github.repository }}
+  DOCKER_IMAGE: ${{ REGISTRY }}/${{ IMAGE_NAME }}:latest
 
 jobs:
   test:
