@@ -80,12 +80,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create artefact
-        run: |
-          cp .env.template etc/env.template
-          cd etc
-          tar -czf ${{ github.workspace }}/${{ env.ARTEFACT_NAME }} *
-
       - name: Prepare SSH file
         run: |
           mkdir ~/.ssh
