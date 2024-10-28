@@ -19,5 +19,6 @@ echo "=== check status ==="
 sudo systemctl show -p ActiveState --value tg-housing
 
 echo "=== show containers ==="
+sleep 10
 docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Status}}\t|" | grep tg-housing
 echo "==="
