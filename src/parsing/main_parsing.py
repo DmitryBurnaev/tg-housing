@@ -160,3 +160,65 @@ class Parser:
     @staticmethod
     def _clear_string(src_string: str) -> str:
         return src_string.replace("\n", "").strip()
+
+
+class HotWaterParser(Parser):
+
+    def _parse_website(
+        self,
+        service: SupportedService,
+        address: Address,
+    ) -> dict[Address, set[DateRange]]:
+        # TODO: use DI instead!
+        html_content = self._get_content(service, address)
+        tree = html.fromstring(html_content)
+        rows = tree.xpath("//table/tbody/tr")
+        if not rows:
+            logger.info("No data found for service: %s", service)
+            return {}
+
+        result = defaultdict(set)
+
+        for row in rows:
+            if row_streets := row.xpath(".//td[@class='rowStreets']"):
+                addresses = row_streets[0].xpath(".//span/text()")
+                dates = row.xpath("td/text()")[4:8]
+                date_start, time_start, date_end, time_end = map(self._clear_string, dates)
+
+                if len(addresses) == 1:
+                    addresses = addresses[0]
+                else:
+                    logger.warning(
+                        "Streets count more than 1: %(service)s | %(address)s",
+                        {"service": service, "address": address},
+                    )
+                    addresses = ",".join(addresses)
+
+                start_time = self._prepare_time(date_start, time_start)
+                end_time = self._prepare_time(date_end, time_end)
+                for raw_address in addresses.split(","):
+                    raw_address = self._clear_string(raw_address)
+                    street_name, houses = get_street_and_house(
+                        pattern=self.address_pattern, address=raw_address
+                    )
+                    logger.debug(
+                        "Parsing [%(service)s] Found record: raw: "
+                        "%(raw_address)s | %(street_name)s | %(houses)s | %(start)s | %(end)s",
+                        {
+                            "service": service,
+                            "raw_address": raw_address,
+                            "street_name": street_name,
+                            "houses": houses,
+                            "start": start_time.isoformat() if start_time else "",
+                            "end": end_time.isoformat() if end_time else "",
+                        },
+                    )
+                    for house in houses:
+                        address_key = Address(
+                            city=self.city, street=street_name, house=house, raw=raw_address
+                        )
+                        result[address_key].add(DateRange(start_time, end_time))
+
+        pprint.pprint(result, indent=4)
+        print("======")
+        return result
