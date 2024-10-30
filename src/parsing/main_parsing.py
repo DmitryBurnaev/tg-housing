@@ -55,6 +55,7 @@ class Parser:
         url = self.urls[service].format(
             city="",
             street=urllib.parse.quote_plus(address.street.encode()) if address.street else "",
+            house=address.house if address.house else "",
             date_start=self._format_date(self.date_start),
             date_finish=self._format_date(self.finish_time_filter),
         )
@@ -180,8 +181,8 @@ class HotWaterParser(Parser):
         result = defaultdict(set)
 
         for row in rows:
-            if row_streets := row.xpath(".//td[@class='rowStreets']"):
-                addresses = row_streets[0].xpath(".//span/text()")
+            if row_streets := row.xpath(".//td"):
+                addresses = row_streets[2].xpath("td/text()")
                 dates = row.xpath("td/text()")[4:8]
                 date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
