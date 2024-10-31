@@ -183,42 +183,47 @@ class HotWaterParser(Parser):
         for row in rows:
             if row_streets := row.xpath(".//td"):
                 addresses = row_streets[2].xpath("td/text()")
-                dates = row.xpath("td/text()")[4:8]
-                date_start, time_start, date_end, time_end = map(self._clear_string, dates)
+                row_data = row.xpath("td/text()")[3:5]
+                street, house, _, _, period_1, period_2 = row_data
+                print(f"{street=}")
+                print(f"{house=}")
+                print(f"{period_1=}")
+                print(f"{period_2=}")
 
-                if len(addresses) == 1:
-                    addresses = addresses[0]
-                else:
-                    logger.warning(
-                        "Streets count more than 1: %(service)s | %(address)s",
-                        {"service": service, "address": address},
-                    )
-                    addresses = ",".join(addresses)
-
-                start_time = self._prepare_time(date_start, time_start)
-                end_time = self._prepare_time(date_end, time_end)
-                for raw_address in addresses.split(","):
-                    raw_address = self._clear_string(raw_address)
-                    street_name, houses = get_street_and_house(
-                        pattern=self.address_pattern, address=raw_address
-                    )
-                    logger.debug(
-                        "Parsing [%(service)s] Found record: raw: "
-                        "%(raw_address)s | %(street_name)s | %(houses)s | %(start)s | %(end)s",
-                        {
-                            "service": service,
-                            "raw_address": raw_address,
-                            "street_name": street_name,
-                            "houses": houses,
-                            "start": start_time.isoformat() if start_time else "",
-                            "end": end_time.isoformat() if end_time else "",
-                        },
-                    )
-                    for house in houses:
-                        address_key = Address(
-                            city=self.city, street=street_name, house=house, raw=raw_address
-                        )
-                        result[address_key].add(DateRange(start_time, end_time))
+                #
+                # if len(addresses) == 1:
+                #     addresses = addresses[0]
+                # else:
+                #     logger.warning(
+                #         "Streets count more than 1: %(service)s | %(address)s",
+                #         {"service": service, "address": address},
+                #     )
+                #     addresses = ",".join(addresses)
+                #
+                # start_time = self._prepare_time(date_start, time_start)
+                # end_time = self._prepare_time(date_end, time_end)
+                # for raw_address in addresses.split(","):
+                #     raw_address = self._clear_string(raw_address)
+                #     street_name, houses = get_street_and_house(
+                #         pattern=self.address_pattern, address=raw_address
+                #     )
+                #     logger.debug(
+                #         "Parsing [%(service)s] Found record: raw: "
+                #         "%(raw_address)s | %(street_name)s | %(houses)s | %(start)s | %(end)s",
+                #         {
+                #             "service": service,
+                #             "raw_address": raw_address,
+                #             "street_name": street_name,
+                #             "houses": houses,
+                #             "start": start_time.isoformat() if start_time else "",
+                #             "end": end_time.isoformat() if end_time else "",
+                #         },
+                #     )
+                #     for house in houses:
+                #         address_key = Address(
+                #             city=self.city, street=street_name, house=house, raw=raw_address
+                #         )
+                #         result[address_key].add(DateRange(start_time, end_time))
 
         pprint.pprint(result, indent=4)
         print("======")
