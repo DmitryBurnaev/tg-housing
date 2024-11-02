@@ -5,7 +5,7 @@ import uuid
 from src.config.app import SupportedService, SupportedCity
 from src.config.logging import LOGGING_CONFIG
 from src.db.models import User
-from src.parsing.main_parsing import Parser
+from src.parsing.main_parsing import BaseParser
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ def main():
         city=SupportedCity.SPB,
         raw_address=args.address,
     )
-    service_data_parser = Parser(city=user.address.city)
+    service_data_parser = BaseParser(city=user.address.city)
     result = service_data_parser.parse(SupportedService.ELECTRICITY, user_address=user.address)
     logger.info(f"Parse Result: \n{result}")
     user.send_notification(result)

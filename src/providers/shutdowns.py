@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 from src.config.app import SupportedService, SupportedCity
 from src.db.models import Address
-from src.parsing.main_parsing import Parser
+from src.parsing.main_parsing import BaseParser
 
 
 class ShutDownInfo(NamedTuple):
@@ -29,10 +29,11 @@ class ShutDownProvider:
     @classmethod
     def for_address(cls, address: str, service: SupportedService) -> list[ShutDownInfo]:
         user_address = Address.from_string(raw_address=address)
-        service_data_parser = Parser(city=user_address.city)
-        shutdowns = service_data_parser.parse(service, user_address=user_address)
+        parser_class = BaseParser.get_parsers()[service]
+        shutdowns = parser_class.parse(service, user_address=user_address)
         print(shutdowns)
         result: list[ShutDownInfo] = []
+
         for address, data_ranges in shutdowns.items():
             print(address, data_ranges)
             for data_range in data_ranges:
