@@ -1,9 +1,11 @@
+import abc
 import pprint
 import hashlib
 import logging
 import urllib.parse
 from collections import defaultdict
 from datetime import datetime, timedelta, date
+from typing import ClassVar, Type
 
 import httpx
 from lxml import html
@@ -15,10 +17,11 @@ from src.config.app import RESOURCE_URLS, SupportedCity, SupportedService, DATA_
 logger = logging.getLogger("parsing.main")
 
 
-class Parser:
+class BaseParser(abc.ABC):
     date_format = "%d.%m.%Y"
     address_pattern = ADDRESS_DEFAULT_PATTERN
     max_days_filter = 90
+    service: ClassVar[SupportedService] = NotImplemented
 
     def __init__(self, city: SupportedCity) -> None:
         self.urls = RESOURCE_URLS[city]
@@ -73,6 +76,29 @@ class Parser:
         tmp_file_path.touch()
         tmp_file_path.write_text(response_data)
         return response_data
+
+    @abc.abstractmethod
+    def _parse_website(self, service: str, user_address: Address) -> dict[Address, set[DateRange]]:
+        pass
+
+    @staticmethod
+    def _format_date(date: datetime | date) -> str:
+        return date.strftime("%d.%m.%Y")
+
+    @staticmethod
+    def _clear_string(src_string: str) -> str:
+        return src_string.replace("\n", "").replace(" ", "").strip()
+
+    @classmethod
+    def get_parsers(cls) -> dict[SupportedService, Type["BaseParser"]]:
+        return {
+            subclass.service: subclass
+            for subclass in cls.__subclasses__()
+        }
+
+
+class SPBElectricityParser(BaseParser):
+    service = SupportedService.ELECTRICITY
 
     def _parse_website(
         self,
@@ -139,10 +165,6 @@ class Parser:
         print("======")
         return result
 
-    @staticmethod
-    def _format_date(date: datetime | date) -> str:
-        return date.strftime("%d.%m.%Y")
-
     def _prepare_time(self, date: str, time: str) -> datetime | None:
         date = self._clear_string(date)
         time = self._clear_string(time)
@@ -158,12 +180,9 @@ class Parser:
 
         return result
 
-    @staticmethod
-    def _clear_string(src_string: str) -> str:
-        return src_string.replace("\n", "").strip()
 
-
-class HotWaterParser(Parser):
+class SPBHotWaterParser(BaseParser):
+    service = SupportedService.HOT_WATER
 
     def _parse_website(
         self,
