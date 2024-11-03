@@ -78,7 +78,7 @@ class User:
         house = houses[0] if houses else None
         self.address = Address(city=self.city, street=street, house=house, raw=self.raw_address)
 
-    def send_notification(self, date_ranges: dict[Address, set[DateRange]]) -> None:
+    def echo_results(self, date_ranges: dict[Address, set[DateRange]]) -> None:
         print(f"[{self.name}] === {self.address.raw} ===")
         now_time = datetime.datetime.now(datetime.timezone.utc)
         for address, date_ranges in date_ranges.items():

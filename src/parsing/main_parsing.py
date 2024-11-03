@@ -29,23 +29,20 @@ class BaseParser(abc.ABC):
         self.date_start = datetime.now().date()
         self.finish_time_filter = self.date_start + timedelta(days=self.max_days_filter)
 
-    def parse(
-        self, service: SupportedService, user_address: Address
-    ) -> dict[Address, set[DateRange]]:
+    def parse(self, user_address: Address) -> dict[Address, set[DateRange]]:
         """
         Allows to fetch shouting down info from supported service and format by requested address
 
 
         Args:
-            service: requested Service
             user_address: current user's address
 
         Returns:
             dict with mapping: user-address -> list of dates
         """
-        logger.debug(f"Parsing for service: {service} ({user_address})")
-        parsed_data = self._parse_website(service, user_address) or {}
-        logger.debug("Parsed data %s | \n%s", service, parsed_data)
+        logger.debug(f"Parsing for service: {self.service} ({user_address})")
+        parsed_data: dict[Address, set[DateRange]] = self._parse_website(self.service, user_address)
+        logger.debug("Parsed data %s | \n%s", self.service, parsed_data)
 
         found_ranges: dict[Address, set[DateRange]] = {}
         for address, date_ranges in parsed_data.items():
@@ -91,10 +88,7 @@ class BaseParser(abc.ABC):
 
     @classmethod
     def get_parsers(cls) -> dict[SupportedService, Type["BaseParser"]]:
-        return {
-            subclass.service: subclass
-            for subclass in cls.__subclasses__()
-        }
+        return {subclass.service: subclass for subclass in cls.__subclasses__()}
 
 
 class SPBElectricityParser(BaseParser):
@@ -119,7 +113,7 @@ class SPBElectricityParser(BaseParser):
             logger.info("No data found for service: %s", service)
             return {}
 
-        result = defaultdict(set)
+        result: defaultdict[Address, set] = defaultdict(set)
 
         for row in rows:
             if row_streets := row.xpath(".//td[@class='rowStreets']"):
