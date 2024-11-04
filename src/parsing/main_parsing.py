@@ -11,7 +11,7 @@ import httpx
 from lxml import html
 
 from src.db.models import Address, DateRange
-from src.utils import get_street_and_house, ADDRESS_DEFAULT_PATTERN
+from src.utils import parse_address, ADDRESS_DEFAULT_PATTERN
 from src.config.app import RESOURCE_URLS, SupportedCity, SupportedService, DATA_PATH
 
 logger = logging.getLogger("parsing.main")
@@ -54,7 +54,8 @@ class BaseParser(abc.ABC):
     def _get_content(self, service: SupportedService, address: Address) -> str:
         url = self.urls[service].format(
             city="",
-            street=urllib.parse.quote_plus(address.street.encode()) if address.street else "",
+            street_name=urllib.parse.quote_plus((address.street_name or "").encode()),
+            street_prefix=urllib.parse.quote_plus((address.street_prefix or "").encode()),
             house=address.house if address.house else "",
             date_start=self._format_date(self.date_start),
             date_finish=self._format_date(self.finish_time_filter),
@@ -134,7 +135,7 @@ class SPBElectricityParser(BaseParser):
                 end_time = self._prepare_time(date_end, time_end)
                 for raw_address in addresses.split(","):
                     raw_address = self._clear_string(raw_address)
-                    street_name, houses = get_street_and_house(
+                    parsed_address = parse_address(
                         pattern=self.address_pattern, address=raw_address
                     )
                     logger.debug(
@@ -143,15 +144,19 @@ class SPBElectricityParser(BaseParser):
                         {
                             "service": service,
                             "raw_address": raw_address,
-                            "street_name": street_name,
-                            "houses": houses,
+                            "street_name": parsed_address.street_name,
+                            "houses": parsed_address.houses,
                             "start": start_time.isoformat() if start_time else "",
                             "end": end_time.isoformat() if end_time else "",
                         },
                     )
-                    for house in houses:
+                    for house in parsed_address.houses:
                         address_key = Address(
-                            city=self.city, street=street_name, house=house, raw=raw_address
+                            city=self.city,
+                            street=parsed_address.street_name,
+                            street_prefix=parsed_address.street_prefix,
+                            house=house,
+                            raw=raw_address,
                         )
                         result[address_key].add(DateRange(start_time, end_time))
 
