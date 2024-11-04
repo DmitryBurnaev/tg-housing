@@ -30,7 +30,7 @@ class ShutDownProvider:
     def for_address(cls, address: str, service: SupportedService) -> list[ShutDownInfo]:
         user_address = Address.from_string(raw_address=address)
         parser_class = BaseParser.get_parsers()[service]
-        shutdowns = parser_class.parse(service, user_address=user_address)
+        shutdowns = parser_class.parse(user_address=user_address)
         print(shutdowns)
         result: list[ShutDownInfo] = []
 

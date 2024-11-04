@@ -5,16 +5,20 @@ from re import Pattern
 from typing import NamedTuple
 
 from src.config.app import SupportedCity
-from src.utils import get_street_and_house, ADDRESS_DEFAULT_PATTERN
+from src.utils import parse_address, ADDRESS_DEFAULT_PATTERN
 
 
 class Address(NamedTuple):
-    """Structural form of storing some user's address"""
+    """
+    Structural form of storing some user's address
+    TODO: may be need to combine with ParsedAddress?
+    """
 
     city: SupportedCity
-    street: str
     house: int | None
+    street_name: str
     raw: str
+    street_prefix: str = ""
 
     def matches(self, other: "Address") -> bool:
         """
@@ -30,7 +34,7 @@ class Address(NamedTuple):
         return all(
             [
                 self.city == other.city,
-                self.street == other.street,
+                self.street_name == other.street_name,
                 self.house == other.house,
             ]
         )
@@ -38,15 +42,12 @@ class Address(NamedTuple):
     @classmethod
     def from_string(cls, raw_address: str, pattern: Pattern[str] | None = None) -> "Address":
         pattern = pattern or ADDRESS_DEFAULT_PATTERN
-        street_name, houses = get_street_and_house(
-            pattern=pattern,
-            address=raw_address,
-        )
-
+        parsed_address = parse_address(pattern=pattern, address=raw_address)
         return cls(
             city=SupportedCity.SPB,
-            street=street_name,
-            house=houses[0] if houses else None,
+            street_namr=parsed_address.street_name,
+            street_prefix=parsed_address.street_prefix,
+            house=parsed_address.houses[0] if parsed_address.houses else None,
             raw=raw_address,
         )
 
@@ -74,9 +75,14 @@ class User:
     address: Address | None = None
 
     def __post_init__(self):
-        street, houses = get_street_and_house(self.raw_address)
-        house = houses[0] if houses else None
-        self.address = Address(city=self.city, street=street, house=house, raw=self.raw_address)
+        parsed_address = parse_address(self.raw_address)
+        self.address = Address(
+            city=self.city,
+            street_name=parsed_address.street_name,
+            street_prefix=parsed_address.street_prefix,
+            house=parsed_address.houses[0] if parsed_address.houses else None,
+            raw=self.raw_address,
+        )
 
     def echo_results(self, date_ranges: dict[Address, set[DateRange]]) -> None:
         print(f"[{self.name}] === {self.address.raw} ===")

@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(description="Process some addresses.")
-    parser.add_argument("address", metavar="address", type=str)
-    parser.add_argument("service", metavar="service", type=str)
+    parser.add_argument("--address", metavar="address", type=str)
+    parser.add_argument("--service", metavar="service", type=str)
     logging.config.dictConfig(LOGGING_CONFIG)
     logging.captureWarnings(capture=True)
 
