@@ -4,7 +4,7 @@ import hashlib
 import logging
 import urllib.parse
 from collections import defaultdict
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from typing import ClassVar, Type
 
 import httpx
@@ -52,6 +52,10 @@ class BaseParser(abc.ABC):
         return found_ranges
 
     def _get_content(self, service: SupportedService, address: Address) -> str:
+        def cashed_filename(url: str) -> str:
+            dt = datetime.now(tz=timezone.utc).date().isoformat()
+            return f"{service.lower()}_{dt}_{hashlib.sha256(url.encode("utf-8")).hexdigest()}.html"
+
         url = self.urls[service].format(
             city="",
             street_name=urllib.parse.quote_plus((address.street_name or "").encode()),
@@ -60,9 +64,7 @@ class BaseParser(abc.ABC):
             date_start=self._format_date(self.date_start),
             date_finish=self._format_date(self.finish_time_filter),
         )
-        tmp_file_path = (
-            DATA_PATH / f"{service.lower()}_{hashlib.sha256(url.encode("utf-8")).hexdigest()}.html"
-        )
+        tmp_file_path = DATA_PATH / cashed_filename(url)
         if tmp_file_path.exists():
             return tmp_file_path.read_text()
 
