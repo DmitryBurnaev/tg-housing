@@ -16,7 +16,7 @@ class Address(NamedTuple):
 
     city: SupportedCity
     house: int | None
-    street_name: str
+    street: str
     raw: str
     street_prefix: str = ""
 
@@ -34,7 +34,7 @@ class Address(NamedTuple):
         return all(
             [
                 self.city == other.city,
-                self.street_name == other.street_name,
+                self.street == other.street,
                 self.house == other.house,
             ]
         )
@@ -78,7 +78,7 @@ class User:
         parsed_address = parse_address(self.raw_address)
         self.address = Address(
             city=self.city,
-            street_name=parsed_address.street_name,
+            street=parsed_address.street_name,
             street_prefix=parsed_address.street_prefix,
             house=parsed_address.houses[0] if parsed_address.houses else None,
             raw=self.raw_address,

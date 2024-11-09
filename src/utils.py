@@ -33,7 +33,7 @@ STREET_ELEMENTS = r"""
 ш\.?""".replace("\n", "")
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
-    rf"^(?P<street_prefix>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?),?\s(?:д\.?|дом)\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
+    rf"^(?P<street_prefix>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?),?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
 )
 
 

@@ -42,7 +42,13 @@ class BaseParser(abc.ABC):
         """
         logger.debug(f"Parsing for service: {self.service} ({user_address})")
         parsed_data: dict[Address, set[DateRange]] = self._parse_website(self.service, user_address)
-        logger.debug("Parsed data %s | \n%s", self.service, parsed_data)
+        logger.debug(
+            "Parsed %(service)s | \n%(parsed_data)s",
+            {
+                "service": self.service,
+                "parsed_data": parsed_data,
+            },
+        )
 
         found_ranges: dict[Address, set[DateRange]] = {}
         for address, date_ranges in parsed_data.items():
@@ -58,7 +64,7 @@ class BaseParser(abc.ABC):
 
         url = self.urls[service].format(
             city="",
-            street_name=urllib.parse.quote_plus((address.street_name or "").encode()),
+            street_name=urllib.parse.quote_plus((address.street or "").encode()),
             street_prefix=urllib.parse.quote_plus((address.street_prefix or "").encode()),
             house=address.house if address.house else "",
             date_start=self._format_date(self.date_start),
@@ -190,10 +196,9 @@ class SPBHotWaterParser(BaseParser):
         service: SupportedService,
         address: Address,
     ) -> dict[Address, set[DateRange]]:
-        # TODO: use DI instead!
         html_content = self._get_content(service, address)
         tree = html.fromstring(html_content)
-        rows = tree.xpath("//table/tbody/tr")
+        rows = tree.xpath("//table[@class='graph']/tbody/tr")
         if not rows:
             logger.info("No data found for service: %s", service)
             return {}
@@ -202,34 +207,65 @@ class SPBHotWaterParser(BaseParser):
 
         for row in rows:
             if row.xpath(".//td"):
-                row_data = row.xpath("td/text()")[3:5]
-                print(row_data)
-                street_name, house, _, _, period_1, period_2 = row_data
-                print(f"{street_name=}")
-                print(f"{house=}")
-                print(f"{period_1=}")
-                print(f"{period_2=}")
+                row_data = row.xpath(".//td/text()")
+                try:
+                    logger.debug(
+                        "Parsing [%(service)s] Found record: row_data: %(row_data)s",
+                        {
+                            "service": self.service,
+                            "row_data": row_data,
+                        },
+                    )
+                    (_, district, street, house, liter, period_1, period_2) = row_data
+                except IndexError:
+                    logger.warning(
+                        "Parsing [%(service)s] Found unparsable row: %(row_data)s",
+                        {
+                            "service": self.service,
+                            "row_data": row_data,
+                        },
+                    )
+                    continue
+                else:
+                    logger.debug(
+                        "Parsing [%(service)s] Found district: %(district)s | street: %(street)s "
+                        "| house: %(house)s | period_1: %(period_1)s | period_2: %(period_2)s",
+                        {
+                            "service": self.service,
+                            "district": district,
+                            "street": street,
+                            "house": house,
+                            "period_1": period_1,
+                            "period_2": period_2,
+                        },
+                    )
 
                 for period in (period_1, period_2):
                     start_dt, finish_dt = self._prepare_dates(period)
                     logger.debug(
-                        "Parsing [%(service)s] Found record: raw: "
-                        "%(street_name)s | %(houses)s | %(start)s | %(end)s",
+                        "Parsing [%(service)s] Found record: "
+                        "%(street)s | %(house)s | %(start)s | %(end)s",
                         {
                             "service": service,
-                            "street_name": street_name,
-                            "house": [house],
+                            "street": street,
+                            "house": house,
                             "start": start_dt.isoformat() if start_dt else "",
                             "end": finish_dt.isoformat() if finish_dt else "",
                         },
                     )
-                    address_key = Address(city=self.city, street=street_name, house=house)
+                    address_key = Address(
+                        city=self.city, street=street, house=house, raw=address.raw
+                    )
                     result[address_key].add(DateRange(start_dt, finish_dt))
             else:
-                print("No data-row found for service: %s", service)
+                logger.info(
+                    "Parsing [%(service)s] No Found data for address: %(address)s",
+                    {
+                        "service": self.service,
+                        "address": address,
+                    },
+                )
 
-        pprint.pprint(result, indent=4)
-        print("======")
         return result
 
     def _prepare_dates(self, period: str) -> tuple[datetime | None, datetime | None]:
@@ -238,7 +274,7 @@ class SPBHotWaterParser(BaseParser):
         def get_dt(raw_date: str) -> datetime | None:
             raw_date = self._clear_string(raw_date)
             try:
-                result = datetime.strptime(raw_date, "%d-%m-%YT%H:%M")
+                result = datetime.strptime(raw_date, "%d.%m.%Y")
             except ValueError:
                 logger.warning("Incorrect date / time: date='%s'", raw_date)
                 return None
