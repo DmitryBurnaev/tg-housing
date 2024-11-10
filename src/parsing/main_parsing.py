@@ -64,7 +64,7 @@ class BaseParser(abc.ABC):
 
         url = self.urls[service].format(
             city="",
-            street_name=urllib.parse.quote_plus((address.street or "").encode()),
+            street_name=urllib.parse.quote_plus((address.street_name or "").encode()),
             street_prefix=urllib.parse.quote_plus((address.street_prefix or "").encode()),
             house=address.house if address.house else "",
             date_start=self._format_date(self.date_start),
@@ -161,7 +161,7 @@ class SPBElectricityParser(BaseParser):
                     for house in parsed_address.houses:
                         address_key = Address(
                             city=self.city,
-                            street=parsed_address.street_name,
+                            street_name=parsed_address.street_name,
                             street_prefix=parsed_address.street_prefix,
                             house=house,
                             raw=raw_address,
@@ -254,7 +254,7 @@ class SPBHotWaterParser(BaseParser):
                         },
                     )
                     address_key = Address(
-                        city=self.city, street=street, house=house, raw=address.raw
+                        city=self.city, street_name=street, house=house, raw=address.raw
                     )
                     result[address_key].add(DateRange(start_dt, finish_dt))
             else:
