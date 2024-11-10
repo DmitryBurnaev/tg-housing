@@ -16,8 +16,8 @@ class Address(NamedTuple):
 
     city: SupportedCity
     house: int | None
-    street: str
     raw: str
+    street_name: str
     street_prefix: str = ""
 
     def matches(self, other: "Address") -> bool:
@@ -34,7 +34,8 @@ class Address(NamedTuple):
         return all(
             [
                 self.city == other.city,
-                self.street == other.street,
+                self.street_name == other.street_name,
+                self.street_prefix == other.street_prefix,
                 self.house == other.house,
             ]
         )
@@ -45,7 +46,7 @@ class Address(NamedTuple):
         parsed_address = parse_address(pattern=pattern, address=raw_address)
         return cls(
             city=SupportedCity.SPB,
-            street_namr=parsed_address.street_name,
+            street_name=parsed_address.street_name,
             street_prefix=parsed_address.street_prefix,
             house=parsed_address.houses[0] if parsed_address.houses else None,
             raw=raw_address,
@@ -78,7 +79,7 @@ class User:
         parsed_address = parse_address(self.raw_address)
         self.address = Address(
             city=self.city,
-            street=parsed_address.street_name,
+            street_name=parsed_address.street_name,
             street_prefix=parsed_address.street_prefix,
             house=parsed_address.houses[0] if parsed_address.houses else None,
             raw=self.raw_address,
