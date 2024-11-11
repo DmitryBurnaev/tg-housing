@@ -1,11 +1,14 @@
 import dataclasses
 import datetime
 import uuid
+import logging
 from re import Pattern
 from typing import NamedTuple
 
-from src.config.app import SupportedCity
+from src.config.app import SupportedCity, DEBUG_SHUTDOWNS
 from src.utils import parse_address, ADDRESS_DEFAULT_PATTERN
+
+logger = logging.getLogger(__name__)
 
 
 class Address(NamedTuple):
@@ -58,6 +61,10 @@ class DateRange(NamedTuple):
     end: datetime.datetime
 
     def __gt__(self, other: datetime.datetime) -> bool:
+        if DEBUG_SHUTDOWNS:
+            logger.debug("Fake data comparator: %r > %r | always True", self, other)
+            return True
+
         return self.end.astimezone(datetime.timezone.utc) > other
 
     def __lt__(self, other: datetime.datetime) -> bool:
