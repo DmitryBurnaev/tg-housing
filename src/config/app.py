@@ -54,3 +54,5 @@ TG_TEST_USERS_LIST = os.getenv("TG_TEST_USERS_LIST", "").split(",")
 TG_TEST_CHAT_IDS = os.getenv("TG_TEST_CHAT_IDS", "").split(",")
 
 TMP_DATA_DIR = PROJECT_PATH.parent / ".data"
+
+DEBUG_SHUTDOWNS = os.getenv("DEBUG_SHUTDOWNS", "false").lower() == "true"
