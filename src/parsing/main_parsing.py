@@ -284,3 +284,102 @@ class SPBHotWaterParser(BaseParser):
         start_dt = get_dt(raw_date_1)
         finish_dt = get_dt(raw_date_2)
         return start_dt, finish_dt
+
+
+class SPBColdWaterParser(BaseParser):
+    service = SupportedService.COLD_WATER
+
+    def _parse_website(
+        self,
+        service: SupportedService,
+        address: Address,
+    ) -> dict[Address, set[DateRange]]:
+        html_content = self._get_content(service, address)
+        tree = html.fromstring(html_content)
+        rows = tree.xpath("//div[@class='listplan-item']")
+        if not rows:
+            logger.info("No data found for service: %s", service)
+            return {}
+
+        result = defaultdict(set)
+
+        for row in rows:
+            if row.xpath(".//div"):
+                print(row)
+                row_data = row.xpath(".//td/text()")
+                try:
+                    logger.debug(
+                        "Parsing [%(service)s] Found record: row_data: %(row_data)s",
+                        {
+                            "service": self.service,
+                            "row_data": row_data,
+                        },
+                    )
+                    (_, district, street, house, liter, period_1, period_2) = row_data
+                except IndexError:
+                    logger.warning(
+                        "Parsing [%(service)s] Found unparsable row: %(row_data)s",
+                        {
+                            "service": self.service,
+                            "row_data": row_data,
+                        },
+                    )
+                    continue
+                else:
+                    logger.debug(
+                        "Parsing [%(service)s] Found district: %(district)s | street: %(street)s "
+                        "| house: %(house)s | period_1: %(period_1)s | period_2: %(period_2)s",
+                        {
+                            "service": self.service,
+                            "district": district,
+                            "street": street,
+                            "house": house,
+                            "period_1": period_1,
+                            "period_2": period_2,
+                        },
+                    )
+
+                for period in (period_1, period_2):
+                    start_dt, finish_dt = self._prepare_dates(period)
+                    logger.debug(
+                        "Parsing [%(service)s] Found record: "
+                        "%(street)s | %(house)s | %(start)s | %(end)s",
+                        {
+                            "service": service,
+                            "street": street,
+                            "house": house,
+                            "start": start_dt.isoformat() if start_dt else "",
+                            "end": finish_dt.isoformat() if finish_dt else "",
+                        },
+                    )
+                    address_key = Address(
+                        city=self.city, street_name=street, house=house, raw=address.raw
+                    )
+                    result[address_key].add(DateRange(start_dt, finish_dt))
+            else:
+                logger.info(
+                    "Parsing [%(service)s] No Found data for address: %(address)s",
+                    {
+                        "service": self.service,
+                        "address": address,
+                    },
+                )
+
+        return result
+
+    def _prepare_dates(self, period: str) -> tuple[datetime | None, datetime | None]:
+        raw_date_1, raw_date_2 = period.split(" - ")
+
+        def get_dt(raw_date: str) -> datetime | None:
+            raw_date = self._clear_string(raw_date)
+            try:
+                result = datetime.strptime(raw_date, "%d.%m.%Y")
+            except ValueError:
+                logger.warning("Incorrect date / time: date='%s'", raw_date)
+                return None
+
+            return result
+
+        start_dt = get_dt(raw_date_1)
+        finish_dt = get_dt(raw_date_2)
+        return start_dt, finish_dt
