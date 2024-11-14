@@ -262,9 +262,15 @@ class SPBColdWaterParser(BaseParser):
                     "end": finish_dt.isoformat() if finish_dt else "",
                 },
             )
-            address_key = Address(city=self.city, street_name=street, raw=address.raw)
-            result[address_key].add(DateRange(start_dt, finish_dt))
-        else:
+            if address.street_name in street:
+                address_key = Address(
+                    city=self.city,
+                    street_name=address.street_name,
+                    raw=street,
+                )
+                result[address_key].add(DateRange(start_dt, finish_dt))
+
+        if not result:
             logger.info(
                 "Parsing [%(service)s] No Found data for address: %(address)s",
                 {
