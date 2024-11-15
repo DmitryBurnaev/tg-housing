@@ -1,6 +1,10 @@
+import locale
 import pprint
+from contextlib import contextmanager
 from datetime import datetime
 from collections import defaultdict
+from functools import wraps
+from typing import NamedTuple
 
 from lxml import html
 
@@ -14,6 +18,21 @@ __all__ = (
     "SPBHotWaterParser",
     "SPBColdWaterParser",
 )
+
+
+def set_locale_decorator(func):
+    """ Temp added ru local for correct parsing datetimes """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        old_locale = locale.getlocale(locale.LC_ALL)
+        try:
+            locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+            result = func(*args, **kwargs)
+        finally:
+            locale.setlocale(locale.LC_ALL, old_locale)
+        return result
+
+    return wrapper
 
 
 class SPBElectricityParser(BaseParser):
@@ -202,6 +221,12 @@ class SPBHotWaterParser(BaseParser):
         return start_dt, finish_dt
 
 
+class ColdWaterRecord(NamedTuple):
+    street: str
+    period_start: str
+    period_end: str
+
+
 class SPBColdWaterParser(BaseParser):
     service = SupportedService.COLD_WATER
 
@@ -221,6 +246,13 @@ class SPBColdWaterParser(BaseParser):
 
         for row in rows:
             if not (row_data := self._extract_info_tags(row)):
+                logger.debug(
+                    "Parsing [%(service)s] Found unparsable row: %(row_data)s",
+                    {
+                        "service": self.service,
+                        "row_data": row.text_content(),
+                    }
+                )
                 continue
 
             try:
@@ -231,7 +263,7 @@ class SPBColdWaterParser(BaseParser):
                         "row_data": row_data,
                     },
                 )
-                street, period_1 = row_data
+                # street, period_1 = row_data
             except IndexError:
                 logger.warning(
                     "Parsing [%(service)s] Found unparsable row: %(row_data)r",
@@ -243,30 +275,32 @@ class SPBColdWaterParser(BaseParser):
                 continue
             else:
                 logger.debug(
-                    "Parsing [%(service)s] Found street: %(street)s | period_1: %(period_1)s",
+                    "Parsing [%(service)s] Found street: %(street)s "
+                    "| period_1: %(period_1)s | period_2: %(period_2)s",
                     {
                         "service": self.service,
-                        "street": street,
-                        "period_1": period_1,
+                        "street": row_data.street,
+                        "period_1": row_data.period_start,
+                        "period_2": row_data.period_end,
                     },
                 )
 
-            start_dt, finish_dt = self._prepare_dates(period_1)
+            start_dt, finish_dt = self._prepare_dates(row_data.period_start, row_data.period_end)
             logger.debug(
                 "Parsing [%(service)s] Found record: "
-                "%(street)s | %(house)s | %(start)s | %(end)s",
+                "%(street)s | %(start)s | %(end)s",
                 {
-                    "service": service,
-                    "street": street,
+                    "service": self.service,
+                    "street": row_data.street,
                     "start": start_dt.isoformat() if start_dt else "",
                     "end": finish_dt.isoformat() if finish_dt else "",
                 },
             )
-            if address.street_name in street:
+            if address.street_name in row_data.street:
                 address_key = Address(
                     city=self.city,
                     street_name=address.street_name,
-                    raw=street,
+                    raw=row_data.street,
                 )
                 result[address_key].add(DateRange(start_dt, finish_dt))
 
@@ -281,13 +315,13 @@ class SPBColdWaterParser(BaseParser):
 
         return result
 
-    def _prepare_dates(self, period: str) -> tuple[datetime | None, datetime | None]:
-        raw_date_1, raw_date_2 = period.split(" - ")
+    @set_locale_decorator
+    def _prepare_dates(self, period_1: str, period_2: str) -> tuple[datetime | None, datetime | None]:
+        raw_date_1, raw_date_2 = period_1, period_2
 
         def get_dt(raw_date: str) -> datetime | None:
-            raw_date = self._clear_string(raw_date)
             try:
-                result = datetime.strptime(raw_date, "%d.%m.%Y")
+                result = datetime.strptime(raw_date.strip(), "%d %B %Y %H:%M")
             except ValueError:
                 logger.warning("Incorrect date / time: date='%s'", raw_date)
                 return None
@@ -299,21 +333,37 @@ class SPBColdWaterParser(BaseParser):
         return start_dt, finish_dt
 
     @staticmethod
-    def _extract_info_tags(row: html.HtmlElement) -> tuple[str, str] | None:
+    def _extract_info_tags(row: html.HtmlElement) -> ColdWaterRecord | None:
         if not (info_tags := row.xpath(".//div//strong")):
+            logger.debug(
+                "Parsing [%(service)s] Found unparsable row: %(row)s",
+                {
+                    "service": SupportedService.COLD_WATER,
+                    "row": row.text_content(),
+                }
+            )
             return None
 
-        shutdown_date: str | None = None
+        shutdown_period_1: str | None = None
+        shutdown_period_2: str | None = None
         shutdown_street: str | None = None
-
+        # print("====")
         for info_tag in info_tags:
-            if info_tag.text == "Период отключения воды":
-                shutdown_date = info_tag.tail.strip()
-            elif info_tag.text == "Адреса отключаемых объектов":
+            # print(info_tag.text)
+            if "начало" in info_tag.text.lower():
+                shutdown_period_1 = info_tag.tail.strip()
+            elif "окончание" in info_tag.text.lower():
+                shutdown_period_2 = info_tag.tail.strip()
+            elif "адреса отключаемых объектов" in info_tag.text.lower():
                 shutdown_street = info_tag.tail.strip()
-            if shutdown_date and shutdown_street:
+
+            if all([shutdown_period_1, shutdown_period_2, shutdown_street]):
                 break
         else:
             return None
 
-        return shutdown_date, shutdown_street
+        return ColdWaterRecord(
+            period_start=shutdown_period_1,
+            period_end=shutdown_period_2,
+            street=shutdown_street,
+        )
