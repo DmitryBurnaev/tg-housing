@@ -1,6 +1,7 @@
 import abc
 import hashlib
 import logging
+import os
 import urllib.parse
 from datetime import datetime, timedelta, date, timezone
 from typing import ClassVar, Type
@@ -19,12 +20,14 @@ class BaseParser(abc.ABC):
     address_pattern = ADDRESS_DEFAULT_PATTERN
     max_days_filter = 90
     service: ClassVar[SupportedService] = NotImplemented
+    verbose: bool = False
 
-    def __init__(self, city: SupportedCity) -> None:
+    def __init__(self, city: SupportedCity, verbose: bool = False) -> None:
         self.urls = RESOURCE_URLS[city]
         self.city = city
         self.date_start = datetime.now().date()
         self.finish_time_filter = self.date_start + timedelta(days=self.max_days_filter)
+        self.verbose = verbose
 
     def parse(self, user_address: Address) -> dict[Address, set[DateRange]]:
         """

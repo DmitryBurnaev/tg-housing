@@ -65,7 +65,7 @@ class DateRange(NamedTuple):
             logger.debug("Fake data comparator: %r > %r | always True", self, other)
             return True
 
-        return self.end.astimezone(datetime.timezone.utc) > other
+        return self.end.astimezone(datetime.timezone.utc) >= other
 
     def __lt__(self, other: datetime.datetime) -> bool:
         return self.end.astimezone(datetime.timezone.utc) < other
@@ -93,7 +93,7 @@ class User:
         )
 
     def echo_results(self, date_ranges: dict[Address, set[DateRange]]) -> None:
-        print(f"[{self.name}] === {self.address.raw} ===")
+        print(f"[{self.name}] \n=== {self.address.raw} ===")
         now_time = datetime.datetime.now(datetime.timezone.utc)
         for address, date_ranges in date_ranges.items():
             actual_ranges = []

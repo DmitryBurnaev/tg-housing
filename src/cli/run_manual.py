@@ -1,5 +1,6 @@
 import argparse
 import logging.config
+import pprint
 import uuid
 
 from src.config.app import SupportedService, SupportedCity
@@ -8,7 +9,7 @@ from src.db.models import User
 from src.parsing.main_parsing import BaseParser
 from src.parsing.spb_services import *
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("cli.run_manual")
 
 
 def main():
@@ -27,12 +28,12 @@ def main():
         city=SupportedCity.SPB,
         raw_address=args.address,
     )
-    print(BaseParser.get_parsers())
     parser_class = BaseParser.get_parsers()[service]
     service_data_parser = parser_class(city=user.address.city)
 
     result = service_data_parser.parse(user_address=user.address)
-    logger.info(f"Parse Result: \n{result}")
+    logger.info(f"Parse Result")
+    pprint.pp(result, indent=4)
     user.echo_results(result)
 
 
