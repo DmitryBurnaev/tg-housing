@@ -21,12 +21,13 @@ __all__ = (
 
 
 def set_locale_decorator(func):
-    """ Temp added ru local for correct parsing datetimes """
+    """Temp added ru local for correct parsing datetimes"""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         old_locale = locale.getlocale(locale.LC_ALL)
         try:
-            locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+            locale.setlocale(locale.LC_ALL, "ru_RU.UTF-8")
             result = func(*args, **kwargs)
         finally:
             locale.setlocale(locale.LC_ALL, old_locale)
@@ -246,49 +247,27 @@ class SPBColdWaterParser(BaseParser):
 
         for row in rows:
             if not (row_data := self._extract_info_tags(row)):
-                logger.debug(
-                    "Parsing [%(service)s] Found unparsable row: %(row_data)s",
-                    {
-                        "service": self.service,
-                        "row_data": row.text_content(),
-                    }
-                )
+                if self.verbose:
+                    logger.debug(
+                        "Parsing [%(service)s] Found unparsable row: %(row_data)s",
+                        {
+                            "service": self.service,
+                            "row_data": row.text_content().replace("\n", " | "),
+                        },
+                    )
                 continue
 
-            try:
-                logger.debug(
-                    "Parsing [%(service)s] Found record: row_data: %(row_data)r",
-                    {
-                        "service": self.service,
-                        "row_data": row_data,
-                    },
-                )
-                # street, period_1 = row_data
-            except IndexError:
-                logger.warning(
-                    "Parsing [%(service)s] Found unparsable row: %(row_data)r",
-                    {
-                        "service": self.service,
-                        "row_data": row_data,
-                    },
-                )
-                continue
-            else:
-                logger.debug(
-                    "Parsing [%(service)s] Found street: %(street)s "
-                    "| period_1: %(period_1)s | period_2: %(period_2)s",
-                    {
-                        "service": self.service,
-                        "street": row_data.street,
-                        "period_1": row_data.period_start,
-                        "period_2": row_data.period_end,
-                    },
-                )
+            logger.debug(
+                "Parsing [%(service)s] Found record: row_data: %(row_data)r",
+                {
+                    "service": self.service,
+                    "row_data": row_data,
+                },
+            )
 
             start_dt, finish_dt = self._prepare_dates(row_data.period_start, row_data.period_end)
             logger.debug(
-                "Parsing [%(service)s] Found record: "
-                "%(street)s | %(start)s | %(end)s",
+                "Parsing [%(service)s] Found record: " "%(street)s | %(start)s | %(end)s",
                 {
                     "service": self.service,
                     "street": row_data.street,
@@ -299,8 +278,10 @@ class SPBColdWaterParser(BaseParser):
             if address.street_name in row_data.street:
                 address_key = Address(
                     city=self.city,
-                    street_name=address.street_name,
                     raw=row_data.street,
+                    street_name=address.street_name,
+                    street_prefix=address.street_prefix,
+                    house=address.house,
                 )
                 result[address_key].add(DateRange(start_dt, finish_dt))
 
@@ -316,7 +297,9 @@ class SPBColdWaterParser(BaseParser):
         return result
 
     @set_locale_decorator
-    def _prepare_dates(self, period_1: str, period_2: str) -> tuple[datetime | None, datetime | None]:
+    def _prepare_dates(
+        self, period_1: str, period_2: str
+    ) -> tuple[datetime | None, datetime | None]:
         raw_date_1, raw_date_2 = period_1, period_2
 
         def get_dt(raw_date: str) -> datetime | None:
@@ -340,7 +323,7 @@ class SPBColdWaterParser(BaseParser):
                 {
                     "service": SupportedService.COLD_WATER,
                     "row": row.text_content(),
-                }
+                },
             )
             return None
 

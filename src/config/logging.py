@@ -14,6 +14,7 @@ LOGGING_CONFIG = {
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "standard"}},
     "loggers": {
         "src": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "cli": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "parsing": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
         "aiogram": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
     },
