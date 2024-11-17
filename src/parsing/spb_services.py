@@ -63,7 +63,7 @@ class SPBElectricityParser(BaseParser):
         for row in rows:
             if row_streets := row.xpath(".//td[@class='rowStreets']"):
                 addresses = row_streets[0].xpath(".//span/text()")
-                dates = row.xpath("td/text()")[4:8]
+                dates = [td.text for td in row.xpath("td")[3:7]]
                 date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
                 if len(addresses) == 1:
