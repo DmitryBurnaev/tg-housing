@@ -1,7 +1,6 @@
 import abc
 import hashlib
 import logging
-import os
 import urllib.parse
 from datetime import datetime, timedelta, date, timezone
 from typing import ClassVar, Type
@@ -10,7 +9,13 @@ import httpx
 
 from src.db.models import Address, DateRange
 from src.utils import ADDRESS_DEFAULT_PATTERN
-from src.config.app import RESOURCE_URLS, SupportedCity, SupportedService, DATA_PATH
+from src.config.app import (
+    RESOURCE_URLS,
+    SupportedCity,
+    SupportedService,
+    DATA_PATH,
+    SSL_REQUEST_VERIFY,
+)
 
 logger = logging.getLogger("parsing.main")
 
@@ -75,7 +80,7 @@ class BaseParser(abc.ABC):
             return tmp_file_path.read_text()
 
         logger.debug("Getting content for service: %s ...", url)
-        with httpx.Client() as client:
+        with httpx.Client(verify=SSL_REQUEST_VERIFY) as client:
             response = client.get(url)
             response_data = response.text
 
@@ -93,7 +98,7 @@ class BaseParser(abc.ABC):
 
     @staticmethod
     def _clear_string(src_string: str) -> str:
-        return src_string.replace("\n", "").replace(" ", "").strip()
+        return src_string.replace("\n", "").strip()
 
     @classmethod
     def get_parsers(cls) -> dict[SupportedService, Type["BaseParser"]]:

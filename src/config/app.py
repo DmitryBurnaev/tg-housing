@@ -56,3 +56,5 @@ TG_TEST_CHAT_IDS = os.getenv("TG_TEST_CHAT_IDS", "").split(",")
 TMP_DATA_DIR = PROJECT_PATH.parent / ".data"
 
 DEBUG_SHUTDOWNS = os.getenv("DEBUG_SHUTDOWNS", "false").lower() == "true"
+
+SSL_REQUEST_VERIFY = os.getenv("SSL_REQUEST_VERIFY", "true").lower() == "true"

@@ -66,6 +66,7 @@ class ShutDownProvider:
 
         """
         shutdown_info_list = []
+        # # for (service, parser_cls) in BaseParser.get_parsers().items():
         for service in SupportedService.members():
             for address in addresses:
                 if shutdowns := cls.for_address(SupportedCity.SPB, address, service):
