@@ -34,7 +34,7 @@ class ShutDownProvider:
         parser_class: Type[BaseParser] = BaseParser.get_parsers()[service]
         parser = parser_class(city)
         shutdowns = parser.parse(user_address=user_address)
-        print(shutdowns)
+        print(f"{shutdowns=}")
         result: list[ShutDownInfo] = []
 
         for address, data_ranges in shutdowns.items():

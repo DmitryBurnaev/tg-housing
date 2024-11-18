@@ -19,6 +19,7 @@ from src.handlers.helpers import (
     fetch_shutdowns,
     answer,
 )
+from src.utils import parse_address, ParsedAddress
 
 form_router = Router()
 
@@ -106,10 +107,19 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
     Returns:
         None
     """
-    new_address: str | None = message.text
+    new_address: ParsedAddress = parse_address(message.text)
+    if not new_address.completed:
+        await state.set_state(UserAddressStatesGroup.add_address)
+        await answer(
+            message,
+            f'Ups... we can\'t parse address "{message.text} (got {new_address!r})".',
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        return
+
     if new_address:
         addresses = await get_addresses(state)
-        addresses.append(new_address)
+        addresses.append(str(new_address))
         await state.update_data(addresses=addresses)
         await state.set_state(state=None)
 

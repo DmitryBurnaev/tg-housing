@@ -35,6 +35,10 @@ STREET_ELEMENTS = r"""
 ADDRESS_DEFAULT_PATTERN = re.compile(
     rf"^(?P<street_prefix>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?),?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
 )
+REPLACE_STREET_PREFIX: dict[str, str] = {
+    "пр": "пр-кт",
+    "пр-т": "пр-кт",
+}
 
 
 class ParsedAddress(NamedTuple):
@@ -43,6 +47,20 @@ class ParsedAddress(NamedTuple):
     houses: list[int]
     start_house: int | None = None
     end_house: int | None = None
+
+    def __str__(self) -> str:
+        houses = ",".join(map(str, self.houses))
+        return f"{self.street_prefix}. {self.street_name}, д. {houses}"
+
+    @property
+    def completed(self):
+        return all(
+            [
+                self.street_prefix,
+                self.street_name,
+                self.houses,
+            ]
+        )
 
 
 def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> ParsedAddress:
@@ -56,6 +74,7 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
     if match := (pattern or ADDRESS_DEFAULT_PATTERN).search(address):
         if street_prefix := match.group("street_prefix"):
             street_prefix = street_prefix.strip().removesuffix(".")
+            street_prefix = REPLACE_STREET_PREFIX.get(street_prefix, street_prefix)
 
         street_name = match.group("street_name").strip()
         start_house = int(match.group("start_house"))
