@@ -1,5 +1,8 @@
 import re
+import logging
 from typing import NamedTuple
+
+logger = logging.getLogger(__name__)
 
 STREET_ELEMENTS = r"""
 ал\.?|
@@ -49,8 +52,8 @@ class ParsedAddress(NamedTuple):
     end_house: int | None = None
 
     def __str__(self) -> str:
-        houses = ",".join(map(str, self.houses))
-        return f"{self.street_prefix}. {self.street_name}, д. {houses}"
+        houses = f" , д. {','.join(map(str, self.houses))}" if self.houses else ""
+        return f"{self.street_prefix}. {self.street_name}{houses}"
 
     @property
     def completed(self):
@@ -69,7 +72,7 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
 
     :param address: some string containing address with street and house (maybe range of houses)
     :param pattern: regexp's pattern for fetching street/houses from that
-    :return <tuple> like ("My Street", [12]) or ("My Street", [12, 13, 14, 15])
+    :return <ParsedAddress> like ParsedAddress("пр-кт", "Наименование проспекта", [34, 35], 34, 35)
     """
     if match := (pattern or ADDRESS_DEFAULT_PATTERN).search(address):
         if street_prefix := match.group("street_prefix"):
@@ -86,6 +89,32 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
             houses=houses,
             start_house=start_house,
             end_house=end_house,
+        )
+    else:
+        parsed_address = ParsedAddress(street_name=address, street_prefix="", houses=[])
+
+    return parsed_address
+
+
+def parse_street(address: str, pattern: re.Pattern[str]) -> ParsedAddress:
+    """
+    Searches street (and street-prefix) from given string
+
+    :param address: some string containing address with street and prefix (like "пр-кт")
+    :param pattern: regexp's pattern for fetching street/houses from that
+    :return <ParsedAddress> like ParsedAddress("пр-кт", "Наименование проспекта", [])
+    """
+    if match := pattern.search(address):
+        if street_prefix := match.group("street_prefix"):
+            street_prefix = street_prefix.strip().removesuffix(".")
+            street_prefix = REPLACE_STREET_PREFIX.get(street_prefix, street_prefix)
+
+        street_name = match.group("street_name").strip()
+
+        parsed_address = ParsedAddress(
+            street_prefix=street_prefix or "",
+            street_name=street_name,
+            houses=[],
         )
     else:
         parsed_address = ParsedAddress(street_name=address, street_prefix="", houses=[])

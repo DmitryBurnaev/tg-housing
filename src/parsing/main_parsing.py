@@ -77,6 +77,13 @@ class BaseParser(abc.ABC):
         )
         tmp_file_path = DATA_PATH / cashed_filename(url)
         if tmp_file_path.exists():
+            logger.debug(
+                "File %(tmp_file_path)s exists (content from %(url)s",
+                {
+                    "url": url,
+                    "tmp_file_path": tmp_file_path,
+                },
+            )
             return tmp_file_path.read_text()
 
         logger.debug("Getting content for service: %s ...", url)
