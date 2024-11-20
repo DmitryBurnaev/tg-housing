@@ -1,7 +1,8 @@
 import locale
 import pprint
+import re
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, date
 from collections import defaultdict
 from functools import wraps
 from typing import NamedTuple
@@ -11,7 +12,7 @@ from lxml import html
 from src.config.app import SupportedService
 from src.db.models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
-from src.utils import parse_address
+from src.utils import parse_address, STREET_ELEMENTS, ParsedAddress, parse_street
 
 __all__ = (
     "SPBElectricityParser",
@@ -126,6 +127,10 @@ class SPBElectricityParser(BaseParser):
 
 class SPBHotWaterParser(BaseParser):
     service = SupportedService.HOT_WATER
+    # TODO: fix pattern to correct street prefix extraction here
+    street_pattern = re.compile(
+        rf"^(?P<street_name>[\w\s.]+?)\s*(?P<street_prefix>{STREET_ELEMENTS})?"
+    )
 
     def _parse_website(
         self,
@@ -152,30 +157,37 @@ class SPBHotWaterParser(BaseParser):
                             "row_data": row_data,
                         },
                     )
-                    (_, district, street, house, liter, period_1, period_2) = row_data
-                except IndexError:
+                    (_, district, street, house, *liter, period_1, period_2) = row_data
+                    street = self._clear_string(street)
+                    liter = "".join(liter)
+                except (IndexError, ValueError) as exc:
                     logger.warning(
-                        "Parsing [%(service)s] Found unparsable row: %(row_data)s",
+                        "Parsing [%(service)s] Found unparsable row: %(row_data)s | error: %(exc)s",
                         {
                             "service": self.service,
                             "row_data": row_data,
+                            "exc": exc,
                         },
                     )
                     continue
                 else:
+                    raw_address = f"{street}, {house} {liter}"
                     logger.debug(
                         "Parsing [%(service)s] Found district: %(district)s | street: %(street)s "
-                        "| house: %(house)s | period_1: %(period_1)s | period_2: %(period_2)s",
+                        "| house: %(house)s | liter: %(liter)s"
+                        " | period_1: %(period_1)s | period_2: %(period_2)s",
                         {
                             "service": self.service,
                             "district": district,
                             "street": street,
                             "house": house,
+                            "liter": liter,
                             "period_1": period_1,
                             "period_2": period_2,
                         },
                     )
 
+                parsed_street: ParsedAddress = parse_street(street, pattern=self.street_pattern)
                 for period in (period_1, period_2):
                     start_dt, finish_dt = self._prepare_dates(period)
                     logger.debug(
@@ -183,14 +195,18 @@ class SPBHotWaterParser(BaseParser):
                         "%(street)s | %(house)s | %(start)s | %(end)s",
                         {
                             "service": service,
-                            "street": street,
+                            "street": parsed_street,
                             "house": house,
                             "start": start_dt.isoformat() if start_dt else "",
                             "end": finish_dt.isoformat() if finish_dt else "",
                         },
                     )
                     address_key = Address(
-                        city=self.city, street_name=street, house=house, raw=address.raw
+                        city=self.city,
+                        street_name=parsed_street.street_name,
+                        street_prefix=parsed_street.street_prefix,
+                        house=house,
+                        raw=raw_address,
                     )
                     result[address_key].add(DateRange(start_dt, finish_dt))
             else:
@@ -207,18 +223,22 @@ class SPBHotWaterParser(BaseParser):
     def _prepare_dates(self, period: str) -> tuple[datetime | None, datetime | None]:
         raw_date_1, raw_date_2 = period.split(" - ")
 
-        def get_dt(raw_date: str) -> datetime | None:
+        def get_dt(raw_date: str) -> date | None:
             raw_date = self._clear_string(raw_date)
             try:
-                result = datetime.strptime(raw_date, "%d.%m.%Y")
+                result = datetime.strptime(raw_date, "%d.%m.%Y").date()
             except ValueError:
                 logger.warning("Incorrect date / time: date='%s'", raw_date)
                 return None
 
             return result
 
-        start_dt = get_dt(raw_date_1)
-        finish_dt = get_dt(raw_date_2)
+        start_dt, finish_dt = get_dt(raw_date_1), get_dt(raw_date_2)
+        if start_dt:
+            start_dt = datetime.combine(start_dt, datetime.min.time())
+        if finish_dt:
+            finish_dt = datetime.combine(finish_dt, datetime.max.time())
+
         return start_dt, finish_dt
 
 

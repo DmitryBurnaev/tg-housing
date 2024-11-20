@@ -18,7 +18,8 @@ class SupportedService(enum.StrEnum):
     @classmethod
     def members(cls) -> list["SupportedService"]:
         # TODO: use correct logic: list(map(lambda x: x.value, cls))
-        return [cls.ELECTRICITY]
+        # return [cls.ELECTRICITY, cls.HOT_WATER]
+        return [cls.HOT_WATER]
 
 
 PROJECT_PATH = Path(__file__).parent.parent.absolute()
