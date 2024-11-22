@@ -1,7 +1,5 @@
 import locale
 import pprint
-import re
-from contextlib import contextmanager
 from datetime import datetime, date
 from collections import defaultdict
 from functools import wraps
@@ -12,7 +10,7 @@ from lxml import html
 from src.config.app import SupportedService
 from src.db.models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
-from src.utils import parse_address, STREET_ELEMENTS, ParsedAddress, parse_street
+from src.utils import parse_address, ParsedAddress, parse_street_name_regex
 
 __all__ = (
     "SPBElectricityParser",
@@ -127,10 +125,6 @@ class SPBElectricityParser(BaseParser):
 
 class SPBHotWaterParser(BaseParser):
     service = SupportedService.HOT_WATER
-    # TODO: fix pattern to correct street prefix extraction here
-    street_pattern = re.compile(
-        rf"^(?P<street_name>[\w\s.]+?)\s*(?P<street_prefix>{STREET_ELEMENTS})?"
-    )
 
     def _parse_website(
         self,
@@ -187,7 +181,7 @@ class SPBHotWaterParser(BaseParser):
                         },
                     )
 
-                parsed_street: ParsedAddress = parse_street(street, pattern=self.street_pattern)
+                parsed_street: ParsedAddress = parse_street_name_regex(street)
                 for period in (period_1, period_2):
                     start_dt, finish_dt = self._prepare_dates(period)
                     logger.debug(
@@ -200,6 +194,11 @@ class SPBHotWaterParser(BaseParser):
                             "start": start_dt.isoformat() if start_dt else "",
                             "end": finish_dt.isoformat() if finish_dt else "",
                         },
+                    )
+                    print(
+                        f"{street=}",
+                        f"{parsed_street.street_name=}",
+                        f"{parsed_street.street_prefix=}",
                     )
                     address_key = Address(
                         city=self.city,
