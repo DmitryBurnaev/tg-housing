@@ -18,12 +18,12 @@ STREET_ELEMENTS = r"""
 мгстр\.?|
 наб\.?|
 пер\.?|
-пр\.?|
 пл\.?|
 пр-д\.?|
 пр-т\.?|пр-кт\.?|
 пр-ка\.?|
 пр-лок\.?|
+пр\.?|
 проул\.?|
 рзд\.?|
 ряд\.?|
@@ -115,6 +115,27 @@ def parse_street(address: str, pattern: re.Pattern[str]) -> ParsedAddress:
             street_prefix=street_prefix or "",
             street_name=street_name,
             houses=[],
+        )
+    else:
+        parsed_address = ParsedAddress(street_name=address, street_prefix="", houses=[])
+
+    return parsed_address
+
+
+def parse_street_name_regex(address: str) -> ParsedAddress:
+    """
+    Searches street (and street-prefix) from given string
+
+    :param address: some string containing address with street and prefix (like "пр-кт")
+    :return <ParsedAddress> like ParsedAddress("пр-кт", "Наименование проспекта", [])
+    """
+    regular_exp = rf"(.*?)({STREET_ELEMENTS})"
+    logger.debug("Using regular expressions for street: '%s' | reg: '%s'", address, regular_exp)
+
+    if match := re.search(regular_exp, address):
+        street_name, prefix = match.groups()
+        parsed_address = ParsedAddress(
+            street_name=street_name.strip(), street_prefix=prefix, houses=[]
         )
     else:
         parsed_address = ParsedAddress(street_name=address, street_prefix="", houses=[])
