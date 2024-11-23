@@ -7,7 +7,6 @@ from src.config.app import SupportedService, SupportedCity
 from src.config.logging import LOGGING_CONFIG
 from src.db.models import User
 from src.parsing.main_parsing import BaseParser
-from src.parsing.spb_services import *
 
 logger = logging.getLogger("cli.run_manual")
 
@@ -32,7 +31,7 @@ def main():
     service_data_parser = parser_class(city=user.address.city)
 
     result = service_data_parser.parse(user_address=user.address)
-    logger.info(f"Parse Result")
+    logger.info("Parse Result")
     pprint.pp(result, indent=4)
     user.echo_results(result)
 
