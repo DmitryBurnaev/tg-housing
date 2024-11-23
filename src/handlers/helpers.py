@@ -7,6 +7,8 @@ from aiogram.utils.formatting import as_marked_section, as_key_value, Text, as_l
 from src.config.app import SERVICE_NAME_MAP
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
+DT_FORMAT = "%d.%m.%Y %H:%M"
+
 
 class UserAddressStatesGroup(StatesGroup):
     """
@@ -57,8 +59,8 @@ async def fetch_shutdowns(state: FSMContext) -> list[Text | str]:
             values.append(
                 as_marked_section(
                     shutdown_info.raw_address,
-                    as_key_value("Start", shutdown_info.start),
-                    as_key_value("End", shutdown_info.end),
+                    as_key_value("Start", shutdown_info.start.strftime(DT_FORMAT)),
+                    as_key_value("End", shutdown_info.end.strftime(DT_FORMAT)),
                     marker="   - ",
                 )
             )

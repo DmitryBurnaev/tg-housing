@@ -21,7 +21,7 @@ class Address(NamedTuple):
     house: int | None
     raw: str
     street_name: str
-    street_prefix: str = ""
+    street_prefix: str = "ул"
 
     def matches(self, other: "Address") -> bool:
         """
@@ -34,6 +34,7 @@ class Address(NamedTuple):
             - bool: True if all attributes (city, street, house) of both Address objects match,
                     False otherwise.
         """
+        logger.debug("Comparing Address: %s | %s", self, other)
         return all(
             [
                 self.city == other.city,

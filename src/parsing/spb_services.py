@@ -20,7 +20,7 @@ __all__ = (
 
 
 def set_locale_decorator(func):
-    """Temp added ru local for correct parsing datetimes"""
+    """Temp added ru local for correct parsing date-times"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -154,6 +154,7 @@ class SPBHotWaterParser(BaseParser):
                     (_, district, street, house, *liter, period_1, period_2) = row_data
                     street = self._clear_string(street)
                     liter = "".join(liter)
+                    house = int(house)
                 except (IndexError, ValueError) as exc:
                     logger.warning(
                         "Parsing [%(service)s] Found unparsable row: %(row_data)s | error: %(exc)s",
@@ -194,11 +195,6 @@ class SPBHotWaterParser(BaseParser):
                             "start": start_dt.isoformat() if start_dt else "",
                             "end": finish_dt.isoformat() if finish_dt else "",
                         },
-                    )
-                    print(
-                        f"{street=}",
-                        f"{parsed_street.street_name=}",
-                        f"{parsed_street.street_prefix=}",
                     )
                     address_key = Address(
                         city=self.city,
