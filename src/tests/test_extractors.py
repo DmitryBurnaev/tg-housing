@@ -12,7 +12,7 @@ from src.utils import parse_address
         ),
         (
             "пр. Avenue Name         , д.75 корп.1",
-            {"street_prefix": "пр", "street_name": "Avenue Name", "houses": [75]},
+            {"street_prefix": "пр-кт", "street_name": "Avenue Name", "houses": [75]},
         ),
         (
             "ул. Street Name, д.75",
