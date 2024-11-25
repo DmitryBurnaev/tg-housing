@@ -15,7 +15,7 @@ COPY pyproject.toml .
 COPY poetry.lock .
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3-dev libpq-dev  \
+  && apt-get install -y --no-install-recommends python3-dev libpq-dev locales \
   && pip install poetry==${POETRY_VERSION} \
   && poetry config --local virtualenvs.create false \
 	&& if [ "${DEV_DEPS}" = "true" ]; then \
@@ -26,6 +26,7 @@ RUN apt-get update \
        PIP_DEFAULT_TIMEOUT=${PIP_DEFAULT_TIMEOUT} poetry install --only=main --no-root --no-cache --no-ansi --no-interaction;  \
      fi \
   && pip uninstall -y poetry poetry-core poetry-plugin-export \
+  && sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && dpkg-reconfigure --frontend=noninteractive locales \
   && apt-get remove python3-dev libpq-dev build-essential -y \
   && apt-get clean \
   && apt-get autoremove -y \
