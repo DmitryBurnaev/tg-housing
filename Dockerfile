@@ -1,11 +1,11 @@
 # copy source code
-FROM alpine:3.20 as code-layer
+FROM alpine:3.20 AS code-layer
 WORKDIR /usr/src
 
 COPY src ./src
 COPY etc/docker-entrypoint .
 
-FROM python:3.12-slim-bookworm as service
+FROM python:3.12-slim-bookworm AS service
 ARG DEV_DEPS="false"
 ARG POETRY_VERSION=1.8.3
 ARG PIP_DEFAULT_TIMEOUT=120
