@@ -24,7 +24,7 @@ def set_locale_decorator(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        old_locale = locale.getlocale(locale.LC_ALL)
+        old_locale = locale.getlocale()
         try:
             locale.setlocale(locale.LC_ALL, "ru_RU.UTF-8")
             result = func(*args, **kwargs)
