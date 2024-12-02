@@ -5,6 +5,7 @@ and provides a structured way for users to interact with address-related command
 """
 
 import logging
+import gettext
 
 from aiogram import F, Router
 from aiogram.utils import markdown
@@ -22,6 +23,7 @@ from src.handlers.helpers import (
 from src.utils import parse_address, ParsedAddress
 
 form_router = Router()
+_ = gettext.gettext
 
 
 @form_router.message(Command("address"))
@@ -31,12 +33,12 @@ async def command_address(message: Message, state: FSMContext) -> None:
     """
     await state.set_state(UserAddressStatesGroup.address)
     await message.answer(
-        "What do you want?",
+        _("What do you want?"),
         reply_markup=ReplyKeyboardMarkup(
             keyboard=[
                 [
-                    KeyboardButton(text="Add Address"),
-                    KeyboardButton(text="Remove Address"),
+                    KeyboardButton(text=_("Add Address")),
+                    KeyboardButton(text=_("Remove Address")),
                 ]
             ],
             resize_keyboard=True,
@@ -59,7 +61,7 @@ async def add_address_command(message: Message, state: FSMContext) -> None:
     """
     await state.set_state(UserAddressStatesGroup.add_address)
     await message.answer(
-        "Ok, Sent me your address (without city, default - SPB)",
+        _("Ok, Sent me your address (without city, default - SPB)"),
         reply_markup=ReplyKeyboardRemove(),
     )
 
@@ -82,7 +84,7 @@ async def remove_address_command(message: Message, state: FSMContext) -> None:
     state_data = await state.get_data()
     await state.set_state(UserAddressStatesGroup.remove_address)
     await message.answer(
-        "What address do you want to remove?",
+        _("What address do you want to remove?"),
         reply_markup=ReplyKeyboardMarkup(
             keyboard=[
                 [
@@ -112,7 +114,12 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         await state.set_state(UserAddressStatesGroup.add_address)
         await answer(
             message,
-            f'Ups... we can\'t parse address "{message.text} (got {new_address!r})".',
+            _(
+                'Ups... we can\'t parse address "{message_text} (got {new_address})".'.format(
+                    message_text=message.text,
+                    new_address=repr(new_address),
+                )
+            ),
             reply_markup=ReplyKeyboardRemove(),
         )
         return
