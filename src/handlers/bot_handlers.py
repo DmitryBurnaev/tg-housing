@@ -132,7 +132,7 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        f'Ok, I\'ll remember your new address "{new_address}".',
+        _('Ok, I\'ll remember your new address "{new_address}".'.format(new_address=new_address)),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -161,7 +161,7 @@ async def remove_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        f'OK. Address "{message.text}" was removed!',
+        _('OK. Address "{message.text}" was removed!'.format(message=message)),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -195,7 +195,7 @@ async def info_handler(message: Message, state: FSMContext) -> None:
     """
     await answer(
         message,
-        f"Hi, {markdown.bold(message.from_user.full_name)}!",
+        _("Hi, {full_name}!".format(full_name=markdown.bold(message.from_user.full_name))),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -218,7 +218,11 @@ async def clear_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
     await answer(
         message,
-        f"Ok, I forgot all for you, {markdown.bold(message.from_user.full_name)}!",
+        _(
+            "Ok, I forgot all for you, {full_name}!".format(
+                full_name=markdown.bold(message.from_user.full_name)
+            )
+        ),
         reply_markup=ReplyKeyboardRemove(),
     )
 
@@ -238,4 +242,4 @@ async def shutdowns_handler(message: Message, state: FSMContext) -> None:
     """
     addresses = await fetch_addresses(state)
     shutdowns = await fetch_shutdowns(state)
-    await answer(message, "Ok, That's your information:", addresses, *shutdowns)
+    await answer(message, _("Ok, That's your information:"), addresses, *shutdowns)
