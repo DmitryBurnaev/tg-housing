@@ -1,3 +1,5 @@
+import gettext
+
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -8,6 +10,7 @@ from src.config.app import SERVICE_NAME_MAP
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 DT_FORMAT = "%d.%m.%Y %H:%M"
+_ = gettext.gettext
 
 
 class UserAddressStatesGroup(StatesGroup):
@@ -35,18 +38,18 @@ async def fetch_addresses(state: FSMContext) -> Text | str:
 
     """
     if addresses := await get_addresses(state):
-        return as_marked_section("Your Addresses:", *addresses, marker="☑︎ ")
+        return as_marked_section(_("Your Addresses:"), *addresses, marker="☑︎ ")
 
-    return "No address yet :("
+    return _("No address yet :(")
 
 
 async def fetch_shutdowns(state: FSMContext) -> list[Text | str]:
     if not (addresses := await get_addresses(state)):
-        return ["No address yet :("]
+        return [_("No address yet :(")]
 
     shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(addresses)
     if not shutdowns_by_service:
-        return ["No shutdowns :)"]
+        return [_("No shutdowns :)")]
 
     result = []
     for shutdown_by_service in shutdowns_by_service:
@@ -59,8 +62,8 @@ async def fetch_shutdowns(state: FSMContext) -> list[Text | str]:
             values.append(
                 as_marked_section(
                     shutdown_info.raw_address,
-                    as_key_value("Start", shutdown_info.start.strftime(DT_FORMAT)),
-                    as_key_value("End", shutdown_info.end.strftime(DT_FORMAT)),
+                    as_key_value(_("Start"), shutdown_info.start.strftime(DT_FORMAT)),
+                    as_key_value(_("End"), shutdown_info.end.strftime(DT_FORMAT)),
                     marker="   - ",
                 )
             )

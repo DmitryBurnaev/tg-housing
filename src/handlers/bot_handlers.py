@@ -179,7 +179,7 @@ async def cancel_handler(message: Message, state: FSMContext) -> None:
 
     logging.info("Cancelling state %r", current_state)
     await state.set_state(state=None)
-    await message.answer("Cancelled.", reply_markup=ReplyKeyboardRemove())
+    await message.answer(_("Cancelled."), reply_markup=ReplyKeyboardRemove())
 
 
 @form_router.message(Command("info"))
