@@ -1,0 +1,93 @@
+# Russian translations for PACKAGE package
+# Английские переводы для пакета PACKAGE.
+# Copyright (C) 2024 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Automatically generated, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-12-09 10:01+0300\n"
+"PO-Revision-Date: 2024-12-09 10:01+0300\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: src/handlers/bot_handlers.py:36
+msgid "What do you want?"
+msgstr "Что именно необходимо?"
+
+#: src/handlers/bot_handlers.py:40
+msgid "Add Address"
+msgstr "Добавить адрес"
+
+#: src/handlers/bot_handlers.py:41
+msgid "Remove Address"
+msgstr "Удалить адрес"
+
+#: src/handlers/bot_handlers.py:64
+msgid "Ok, Sent me your address (without city, default - SPB)"
+msgstr "Ок, отправь мне свой адрес (без города)"
+
+#: src/handlers/bot_handlers.py:87
+msgid "What address do you want to remove?"
+msgstr "Какой адрес ты хочешь убрать?"
+
+#: src/handlers/bot_handlers.py:118
+#, python-brace-format
+msgid "Ups... we can't parse address \"{message_text} (got {new_address})\"."
+msgstr ""
+
+#: src/handlers/bot_handlers.py:135
+#, python-brace-format
+msgid "Ok, I'll remember your new address \"{new_address}\"."
+msgstr "Ок, я запомню твой новый адрес"
+
+#: src/handlers/bot_handlers.py:164
+#, python-brace-format
+msgid "OK. Address \"{message.text}\" was removed!"
+msgstr "Ок, адрес \"{message.text}\" я удалил!"
+
+#: src/handlers/bot_handlers.py:182
+msgid "Cancelled."
+msgstr "Отменено."
+
+#: src/handlers/bot_handlers.py:198
+#, python-brace-format
+msgid "Hi, {full_name}!"
+msgstr "Привет, {full_name}!"
+
+#: src/handlers/bot_handlers.py:222
+#, python-brace-format
+msgid "Ok, I forgot all for you, {full_name}!"
+msgstr "Ок, я забыл все о тебе, {full_name}!"
+
+#: src/handlers/bot_handlers.py:245
+msgid "Ok, That's your information:"
+msgstr "Ок, вот твоя информация:"
+
+#: src/handlers/helpers.py:41
+msgid "Your Addresses:"
+msgstr "Твой адрес:"
+
+#: src/handlers/helpers.py:43 src/handlers/helpers.py:48
+msgid "No address yet :("
+msgstr "Нет пока добавленных адресов :("
+
+#: src/handlers/helpers.py:52
+msgid "No shutdowns :)"
+msgstr "Не нашел никаких отключений в ближайшем будущем :)"
+
+#: src/handlers/helpers.py:65
+msgid "Start"
+msgstr "Начать"
+
+#: src/handlers/helpers.py:66
+msgid "End"
+msgstr "Закончить"
