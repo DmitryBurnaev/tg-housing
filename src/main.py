@@ -5,6 +5,7 @@ and provides a structured way for users to interact with address-related command
 """
 
 import asyncio
+import gettext
 import logging
 import logging.config
 
@@ -16,6 +17,8 @@ from src.db.storage import TGStorage
 from src.config.app import TG_BOT_API_TOKEN
 from src.config.logging import LOGGING_CONFIG
 from src.handlers.bot_handlers import form_router
+
+translation = gettext.translation(domain='messages', localedir='locale', fallback=True)
 
 
 async def main() -> None:

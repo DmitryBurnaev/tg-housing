@@ -5,7 +5,6 @@ and provides a structured way for users to interact with address-related command
 """
 
 import logging
-import gettext
 
 from aiogram import F, Router
 from aiogram.utils import markdown
@@ -13,6 +12,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
 
+from src.main import translation as _
 from src.handlers.helpers import (
     UserAddressStatesGroup,
     fetch_addresses,
@@ -23,7 +23,6 @@ from src.handlers.helpers import (
 from src.utils import parse_address, ParsedAddress
 
 form_router = Router()
-_ = gettext.gettext
 
 
 @form_router.message(Command("address"))
