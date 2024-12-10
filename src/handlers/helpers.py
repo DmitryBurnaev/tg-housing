@@ -6,11 +6,11 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.formatting import as_marked_section, as_key_value, Text, as_list
 
+from src.main import translation as _
 from src.config.app import SERVICE_NAME_MAP
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 DT_FORMAT = "%d.%m.%Y %H:%M"
-_ = gettext.gettext
 
 
 class UserAddressStatesGroup(StatesGroup):
