@@ -8,84 +8,96 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-09 10:01+0300\n"
+"POT-Creation-Date: 2024-12-16 10:40+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/handlers/bot_handlers.py:36
+#: src/handlers/bot_handlers.py:35
 msgid "What do you want?"
 msgstr ""
 
 #: src/handlers/bot_handlers.py:40
-msgid "Add Address"
-msgstr ""
-
-#: src/handlers/bot_handlers.py:41
 msgid "Remove Address"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:64
+#: src/handlers/bot_handlers.py:63
 msgid "Ok, Sent me your address (without city, default - SPB)"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:87
+#: src/handlers/bot_handlers.py:68
+msgid "remove address"
+msgstr ""
+
+#: src/handlers/bot_handlers.py:86
 msgid "What address do you want to remove?"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:118
+#: src/handlers/bot_handlers.py:116
 #, python-brace-format
 msgid "Ups... we can't parse address \"{message_text} (got {new_address})\"."
 msgstr ""
 
-#: src/handlers/bot_handlers.py:135
+#: src/handlers/bot_handlers.py:132
 #, python-brace-format
 msgid "Ok, I'll remember your new address \"{new_address}\"."
 msgstr ""
 
-#: src/handlers/bot_handlers.py:164
+#: src/handlers/bot_handlers.py:161
 #, python-brace-format
 msgid "OK. Address \"{message.text}\" was removed!"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:182
+#: src/handlers/bot_handlers.py:179
 msgid "Cancelled."
 msgstr ""
 
-#: src/handlers/bot_handlers.py:198
+#: src/handlers/bot_handlers.py:195
 #, python-brace-format
 msgid "Hi, {full_name}!"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:222
+#: src/handlers/bot_handlers.py:218
 #, python-brace-format
 msgid "Ok, I forgot all for you, {full_name}!"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:245
+#: src/handlers/bot_handlers.py:240
 msgid "Ok, That's your information:"
 msgstr ""
 
-#: src/handlers/helpers.py:41
+#: src/handlers/helpers.py:15
+msgid "💡 Electricity"
+msgstr ""
+
+#: src/handlers/helpers.py:16
+msgid "︎🚰 Cold Water"
+msgstr ""
+
+#: src/handlers/helpers.py:17
+msgid "🚿 Hot Water"
+msgstr ""
+
+#: src/handlers/helpers.py:46
 msgid "Your Addresses:"
 msgstr ""
 
-#: src/handlers/helpers.py:43 src/handlers/helpers.py:48
+#: src/handlers/helpers.py:48 src/handlers/helpers.py:53
 msgid "No address yet :("
 msgstr ""
 
-#: src/handlers/helpers.py:52
+#: src/handlers/helpers.py:57
 msgid "No shutdowns :)"
 msgstr ""
 
-#: src/handlers/helpers.py:65
+#: src/handlers/helpers.py:70
 msgid "Start"
 msgstr ""
 
-#: src/handlers/helpers.py:66
+#: src/handlers/helpers.py:71
 msgid "End"
 msgstr ""

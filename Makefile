@@ -23,7 +23,7 @@ locale-init:
 
 locale-update:
 	xgettext -o src/i18n/messages.pot src/handlers/*.py
-	msginit -i src/i18n/messages.pot -o src/i18n/ru/LC_MESSAGES/messages.po -l ru_RU.UTF-8 --no-translator
+	msgmerge --update src/i18n/ru/LC_MESSAGES/messages.po src/i18n/messages.pot
 
 locale-compile:
 	msgfmt -o src/i18n/ru/LC_MESSAGES/messages.mo src/i18n/ru/LC_MESSAGES/messages.po
