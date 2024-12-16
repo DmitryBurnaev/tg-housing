@@ -1,16 +1,21 @@
-import gettext
-
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message
 from aiogram.utils.formatting import as_marked_section, as_key_value, Text, as_list
 
-from src.main import translation as _
-from src.config.app import SERVICE_NAME_MAP
+from src.i18n import _
+from src.config.app import SupportedService
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 DT_FORMAT = "%d.%m.%Y %H:%M"
+
+
+SERVICE_NAME_MAP = {
+    SupportedService.ELECTRICITY: _("💡 Electricity"),
+    SupportedService.COLD_WATER: _("︎🚰 Cold Water"),
+    SupportedService.HOT_WATER: _("🚿 Hot Water"),
+}
 
 
 class UserAddressStatesGroup(StatesGroup):

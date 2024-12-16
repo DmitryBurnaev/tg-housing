@@ -74,7 +74,7 @@ msgstr "Ок, вот твоя информация:"
 
 #: src/handlers/helpers.py:41
 msgid "Your Addresses:"
-msgstr "Твой адрес:"
+msgstr "Твои адреса:"
 
 #: src/handlers/helpers.py:43 src/handlers/helpers.py:48
 msgid "No address yet :("
@@ -86,8 +86,8 @@ msgstr "Не нашел никаких отключений в ближайше�
 
 #: src/handlers/helpers.py:65
 msgid "Start"
-msgstr "Начать"
+msgstr "Начало"
 
 #: src/handlers/helpers.py:66
 msgid "End"
-msgstr "Закончить"
+msgstr "Окончание"

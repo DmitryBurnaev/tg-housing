@@ -12,7 +12,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
 
-from src.main import translation as _
+from src.i18n import _
 from src.handlers.helpers import (
     UserAddressStatesGroup,
     fetch_addresses,
@@ -113,11 +113,9 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         await state.set_state(UserAddressStatesGroup.add_address)
         await answer(
             message,
-            _(
-                'Ups... we can\'t parse address "{message_text} (got {new_address})".'.format(
-                    message_text=message.text,
-                    new_address=repr(new_address),
-                )
+            _('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
+                message_text=message.text,
+                new_address=repr(new_address),
             ),
             reply_markup=ReplyKeyboardRemove(),
         )
@@ -131,7 +129,7 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _('Ok, I\'ll remember your new address "{new_address}".'.format(new_address=new_address)),
+        _('Ok, I\'ll remember your new address "{new_address}".').format(new_address=new_address),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -160,7 +158,7 @@ async def remove_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _('OK. Address "{message.text}" was removed!'.format(message=message)),
+        _('OK. Address "{message.text}" was removed!').format(message=message),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -194,7 +192,7 @@ async def info_handler(message: Message, state: FSMContext) -> None:
     """
     await answer(
         message,
-        _("Hi, {full_name}!".format(full_name=markdown.bold(message.from_user.full_name))),
+        _("Hi, {full_name}!").format(full_name=markdown.bold(message.from_user.full_name)),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -217,10 +215,8 @@ async def clear_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
     await answer(
         message,
-        _(
-            "Ok, I forgot all for you, {full_name}!".format(
-                full_name=markdown.bold(message.from_user.full_name)
-            )
+        _("Ok, I forgot all for you, {full_name}!").format(
+            full_name=markdown.bold(message.from_user.full_name)
         ),
         reply_markup=ReplyKeyboardRemove(),
     )
