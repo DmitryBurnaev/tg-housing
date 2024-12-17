@@ -8,7 +8,7 @@ from src.utils import parse_address
     [
         (
             "Avenue Name пр., д.75 корп.1",
-            {"street_prefix": "", "street_name": "Avenue Name пр.", "houses": [75]},
+            {"street_prefix": "пр-кт", "street_name": "Avenue Name пр.", "houses": [75]},
         ),
         (
             "пр. Avenue Name         , д.75 корп.1",
@@ -24,15 +24,19 @@ from src.utils import parse_address
         ),
         (
             "Avenue Name пр., д.75-79",
-            {"street_prefix": "", "street_name": "Avenue Name пр.", "houses": [75, 76, 77, 78, 79]},
+            {
+                "street_prefix": "пр-кт",
+                "street_name": "Avenue Name пр.",
+                "houses": [75, 76, 77, 78, 79],
+            },
         ),
         (
             "Avenue Name пр., д.79",
-            {"street_prefix": "", "street_name": "Avenue Name пр.", "houses": [79]},
+            {"street_prefix": "пр-кт", "street_name": "Avenue Name пр.", "houses": [79]},
         ),
         (
             "Avenue Name пр., дом 75",
-            {"street_prefix": "", "street_name": "Avenue Name пр.", "houses": [75]},
+            {"street_prefix": "пр-кт", "street_name": "Avenue Name пр.", "houses": [75]},
         ),
         (
             "Invalid Address Format",
