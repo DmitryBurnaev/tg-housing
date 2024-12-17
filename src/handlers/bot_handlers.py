@@ -45,7 +45,7 @@ async def command_address(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(UserAddressStatesGroup.address, F.text.casefold() == _("add address"))
+@form_router.message(UserAddressStatesGroup.address, F.text.casefold() == _("Add Address").lower())
 async def add_address_command(message: Message, state: FSMContext) -> None:
     """
     Handle the 'add address' command from the user.
@@ -65,7 +65,9 @@ async def add_address_command(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(UserAddressStatesGroup.address, F.text.casefold() == _("remove address"))
+@form_router.message(
+    UserAddressStatesGroup.address, F.text.casefold() == _("Remove Address").lower()
+)
 async def remove_address_command(message: Message, state: FSMContext) -> None:
     """
     Handle the "remove address" command from the user.
@@ -115,7 +117,7 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
             message,
             _('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
                 message_text=message.text,
-                new_address=repr(new_address),
+                new_address=str(new_address),
             ),
             reply_markup=ReplyKeyboardRemove(),
         )

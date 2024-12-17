@@ -20,7 +20,7 @@ STREET_ELEMENTS = r"""
 пер\.?|
 пл\.?|
 пр-д\.?|
-пр-т\.?|пр-кт\.?|
+пр-т\.?|пр-кт\.?|Пр-кт\.?|
 пр-ка\.?|
 пр-лок\.?|
 пр\.?|
@@ -32,7 +32,7 @@ STREET_ELEMENTS = r"""
 сзд\.?|
 тракт\.?|
 туп\.?|
-ул\.?|
+ул\.?|Ул\.?|
 ш\.?""".replace("\n", "")
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
@@ -42,6 +42,7 @@ REPLACE_STREET_PREFIX: dict[str, str] = {
     "пр": "пр-кт",
     "пр-т": "пр-кт",
 }
+DEFAULT_STREET_PREFIX = "пр-кт"
 
 
 class ParsedAddress(NamedTuple):
@@ -52,7 +53,7 @@ class ParsedAddress(NamedTuple):
     end_house: int | None = None
 
     def __str__(self) -> str:
-        houses = f" , д. {','.join(map(str, self.houses))}" if self.houses else ""
+        houses = f", д. {','.join(map(str, self.houses))}" if self.houses else ""
         return f"{self.street_prefix}. {self.street_name}{houses}"
 
     @property
@@ -78,6 +79,9 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
         if street_prefix := match.group("street_prefix"):
             street_prefix = street_prefix.strip().removesuffix(".")
             street_prefix = REPLACE_STREET_PREFIX.get(street_prefix, street_prefix)
+        else:
+            logger.debug("Using default street prefix")
+            street_prefix = DEFAULT_STREET_PREFIX
 
         street_name = match.group("street_name").strip()
         start_house = int(match.group("start_house"))

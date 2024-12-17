@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-16 10:40+0300\n"
+"POT-Creation-Date: 2024-12-17 10:04+0300\n"
 "PO-Revision-Date: 2024-12-09 10:01+0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -23,7 +23,11 @@ msgstr ""
 msgid "What do you want?"
 msgstr "Что именно необходимо?"
 
-#: src/handlers/bot_handlers.py:40
+#: src/handlers/bot_handlers.py:39 src/handlers/bot_handlers.py:48
+msgid "Add Address"
+msgstr "Добавить адрес"
+
+#: src/handlers/bot_handlers.py:40 src/handlers/bot_handlers.py:69
 msgid "Remove Address"
 msgstr "Удалить адрес"
 
@@ -31,45 +35,40 @@ msgstr "Удалить адрес"
 msgid "Ok, Sent me your address (without city, default - SPB)"
 msgstr "Ок, отправь мне свой адрес (без города)"
 
-#: src/handlers/bot_handlers.py:68
-#, fuzzy
-msgid "remove address"
-msgstr "Удалить адрес"
-
-#: src/handlers/bot_handlers.py:86
+#: src/handlers/bot_handlers.py:88
 msgid "What address do you want to remove?"
 msgstr "Какой адрес ты хочешь убрать?"
 
-#: src/handlers/bot_handlers.py:116
+#: src/handlers/bot_handlers.py:118
 #, python-brace-format
 msgid "Ups... we can't parse address \"{message_text} (got {new_address})\"."
-msgstr ""
+msgstr "Ух... не получилось понять о каком адресе идет речь. Вы ввели \"{message_text}\", мы поняли как: \"{new_address}\""
 
-#: src/handlers/bot_handlers.py:132
+#: src/handlers/bot_handlers.py:134
 #, python-brace-format
 msgid "Ok, I'll remember your new address \"{new_address}\"."
 msgstr "Ок, я запомню твой новый адрес"
 
-#: src/handlers/bot_handlers.py:161
+#: src/handlers/bot_handlers.py:163
 #, python-brace-format
 msgid "OK. Address \"{message.text}\" was removed!"
 msgstr "Ок, адрес \"{message.text}\" я удалил!"
 
-#: src/handlers/bot_handlers.py:179
+#: src/handlers/bot_handlers.py:181
 msgid "Cancelled."
 msgstr "Отменено."
 
-#: src/handlers/bot_handlers.py:195
+#: src/handlers/bot_handlers.py:197
 #, python-brace-format
 msgid "Hi, {full_name}!"
 msgstr "Привет, {full_name}!"
 
-#: src/handlers/bot_handlers.py:218
+#: src/handlers/bot_handlers.py:220
 #, python-brace-format
 msgid "Ok, I forgot all for you, {full_name}!"
 msgstr "Ок, я забыл все о тебе, {full_name}!"
 
-#: src/handlers/bot_handlers.py:240
+#: src/handlers/bot_handlers.py:242
 msgid "Ok, That's your information:"
 msgstr "Ок, вот твоя информация:"
 
@@ -105,8 +104,9 @@ msgstr "Начало"
 msgid "End"
 msgstr "Окончание"
 
-#~ msgid "Add Address"
-#~ msgstr "Добавить адрес"
+#, fuzzy
+#~ msgid "remove address"
+#~ msgstr "Удалить адрес"
 
 #, fuzzy
 #~ msgid "add address"
