@@ -3,7 +3,7 @@ import hashlib
 import logging
 import urllib.parse
 from datetime import datetime, timedelta, date, timezone
-from typing import ClassVar, Type
+from typing import ClassVar
 
 import httpx
 
@@ -108,5 +108,5 @@ class BaseParser(abc.ABC):
         return src_string.replace("\n", "").strip()
 
     @classmethod
-    def get_parsers(cls) -> dict[SupportedService, Type["BaseParser"]]:
+    def get_parsers(cls) -> dict[type[SupportedService], type["BaseParser"]]:
         return {subclass.service: subclass for subclass in cls.__subclasses__()}
