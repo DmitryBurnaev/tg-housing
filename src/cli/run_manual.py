@@ -20,7 +20,7 @@ def main():
 
     args = parser.parse_args()
 
-    service: SupportedService = SupportedService[args.service]
+    service: type[SupportedService] = SupportedService[args.service]
     user = User(
         id=uuid.uuid4(),
         name="TestUser",
