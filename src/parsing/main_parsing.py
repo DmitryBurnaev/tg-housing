@@ -7,7 +7,7 @@ from typing import ClassVar
 
 import httpx
 
-from src.db.models import Address, DateRange
+from src.db.old_models import Address, DateRange
 from src.utils import ADDRESS_DEFAULT_PATTERN
 from src.config.app import (
     RESOURCE_URLS,
