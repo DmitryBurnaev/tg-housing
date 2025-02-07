@@ -2,7 +2,7 @@ import datetime
 from typing import NamedTuple, Type
 
 from src.config.app import SupportedService, SupportedCity
-from src.db.models import Address
+from src.db.old_models import Address
 from src.parsing.main_parsing import BaseParser
 
 
