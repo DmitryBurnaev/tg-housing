@@ -15,7 +15,7 @@ COPY pyproject.toml .
 COPY poetry.lock .
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3-dev libpq-dev locales \
+  && apt-get install -y --no-install-recommends python3-dev libpq-dev locales cron \
   && pip install poetry==${POETRY_VERSION} \
   && poetry config --local virtualenvs.create false \
 	&& if [ "${DEV_DEPS}" = "true" ]; then \
@@ -36,6 +36,11 @@ RUN apt-get update \
 RUN groupadd --system tg-housing --gid 1005 && \
     useradd --no-log-init --system --gid tg-housing --uid 1005 tg-housing
 
+  # Add cron setup
+RUN echo "0 0 * * * /usr/local/bin/python /app/src/cli/show_users.py >> /app/.data/cron.log 2>&1" > /etc/cron.d/show_users \
+  && chmod 0644 /etc/cron.d/show_users \
+  && crontab /etc/cron.d/show_users
+
 USER tg-housing
 
 COPY --from=code-layer --chown=tg-housing:tg-housing /usr/src .
@@ -43,4 +48,5 @@ COPY --from=code-layer --chown=tg-housing:tg-housing /usr/src .
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+
 ENTRYPOINT ["/bin/sh", "/app/docker-entrypoint"]

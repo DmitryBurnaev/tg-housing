@@ -3,6 +3,8 @@
 
 if [ "${APP_SERVICE}" = "bot" ]
   then
+    # Start cron daemon
+    service cron start
     cd /app && python src/main.py
 
 elif [ "${APP_SERVICE}" = "test" ]
