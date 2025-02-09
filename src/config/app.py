@@ -1,3 +1,9 @@
+"""
+Configuration module for the Telegram bot application.
+
+Defines supported cities and services, resource URLs, and loads environment variables
+for various application settings.
+"""
 import enum
 import os
 from pathlib import Path
@@ -6,17 +12,20 @@ from dotenv import load_dotenv
 
 
 class SupportedCity(enum.StrEnum):
+    """Enumeration of cities supported by the utility notification system."""
     SPB = "SPB"
     RND = "RND"
 
 
 class SupportedService(enum.StrEnum):
+    """ Enumeration of utility services that can be monitored for maintenance schedules."""
     ELECTRICITY = "ELECTRICITY"
     COLD_WATER = "COLD_WATER"
     HOT_WATER = "HOT_WATER"
 
     @classmethod
     def members(cls) -> list["SupportedService"]:
+        """Return a list of all supported utility services."""
         return [cls.ELECTRICITY, cls.HOT_WATER, cls.COLD_WATER]
 
 
@@ -31,8 +40,14 @@ if ENV_FILE_PATH.exists():
 
 RESOURCE_URLS = {
     SupportedCity.SPB: {
-        SupportedService.ELECTRICITY: "https://rosseti-lenenergo.ru/planned_work/?city={city}&date_start={date_start}&date_finish={date_finish}&street={street_name}",
-        SupportedService.HOT_WATER: "https://www.gptek.spb.ru/grafik/?street={street_name}+{street_prefix}&house={house}",
+        SupportedService.ELECTRICITY: (
+            "https://rosseti-lenenergo.ru/planned_work/?"
+            "city={city}&date_start={date_start}&date_finish={date_finish}&street={street_name}"
+        ),
+        SupportedService.HOT_WATER: (
+            "https://www.gptek.spb.ru/grafik/?"
+            "street={street_name}+{street_prefix}&house={house}"
+        ),
         SupportedService.COLD_WATER: "https://www.vodokanal.spb.ru/presscentr/remontnye_raboty/",
     }
 }
@@ -54,3 +69,6 @@ SSL_REQUEST_VERIFY = os.getenv("SSL_REQUEST_VERIFY", "true").lower() == "true"
 
 LOCALE = os.getenv("LOCALE", "ru-RU").lower()
 I18N_FALLBACK = os.getenv("I18N_FALLBACK", "false").lower() == "false"
+
+# SQLite database URL for async connection
+DATABASE_URL = f"sqlite+aiosqlite:///{DATA_PATH}/database.db"
