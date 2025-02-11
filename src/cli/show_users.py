@@ -53,22 +53,6 @@ async def find_shutdowns(addresses) -> list[Text]:
 
     return result
 
-    # # Create mock FSMContext to store addresses
-    # mock_state = FSMContext(storage=None, key=None)
-    # await mock_state.set_data({"addresses": addresses})
-
-    # # Get shutdowns using fetch_shutdowns helper
-    # shutdowns = await fetch_shutdowns(mock_state)
-
-    # # todo: improve this (just test workaroung)
-    # if shutdowns:
-    #     logger.info("\t%s", shutdowns[0])
-    #     return
-
-    # # Log each shutdown by service
-    # for shutdown in shutdowns:
-    #     logger.info("\t%s", shutdown.as_text())
-
 
 async def show_users(session: AsyncSession) -> None:
     """Fetch and display all users from the database."""
