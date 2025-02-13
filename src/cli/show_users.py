@@ -3,27 +3,25 @@
 import asyncio
 import logging.config
 
-from sqlmodel import select
+from aiogram.utils.formatting import Text, as_key_value, as_marked_section
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram.utils.formatting import as_marked_section, as_key_value, Text
+from sqlmodel import select
 
-from src.i18n import _
-from src.db.session import make_sa_session
-from src.db.models import User
 from src.config.logging import LOGGING_CONFIG
-from src.handlers.helpers import SERVICE_NAME_MAP, DT_FORMAT
+from src.db.models import User
+from src.db.session import make_sa_session
+from src.handlers.helpers import DT_FORMAT, SERVICE_NAME_MAP
+from src.i18n import _
 from src.providers.shutdowns import ShutDownByServiceInfo, ShutDownProvider
 
 logging.config.dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 
-async def find_shutdowns(addresses) -> list[Text]:
+async def find_shutdowns(addresses: list[str]) -> list[Text]:
     """Using fetch_shutdowns find possible shutdowns for user's addresses"""
 
-    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(
-        addresses
-    )
+    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(addresses)
     if not shutdowns_by_service:
         return [_("No shutdowns :)")]
 
@@ -66,9 +64,7 @@ async def show_users(session: AsyncSession) -> None:
 
     logger.info("Current users in database:")
     for user in users:
-        logger.info(
-            "ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username
-        )
+        logger.info("ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username)
         # Print addresses for this user
         if user.addresses:
             for addr in user.addresses:
