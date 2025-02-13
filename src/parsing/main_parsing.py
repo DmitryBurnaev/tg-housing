@@ -2,20 +2,20 @@ import abc
 import hashlib
 import logging
 import urllib.parse
-from datetime import datetime, timedelta, date, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import ClassVar
 
 import httpx
 
-from src.db.old_models import Address, DateRange
-from src.utils import ADDRESS_DEFAULT_PATTERN
 from src.config.app import (
+    DATA_PATH,
     RESOURCE_URLS,
+    SSL_REQUEST_VERIFY,
     SupportedCity,
     SupportedService,
-    DATA_PATH,
-    SSL_REQUEST_VERIFY,
 )
+from src.db.old_models import Address, DateRange
+from src.utils import ADDRESS_DEFAULT_PATTERN
 
 logger = logging.getLogger("parsing.main")
 
@@ -108,5 +108,5 @@ class BaseParser(abc.ABC):
         return src_string.replace("\n", "").strip()
 
     @classmethod
-    def get_parsers(cls) -> dict[type[SupportedService], type["BaseParser"]]:
+    def get_parsers(cls) -> dict[SupportedService, type["BaseParser"]]:
         return {subclass.service: subclass for subclass in cls.__subclasses__()}
