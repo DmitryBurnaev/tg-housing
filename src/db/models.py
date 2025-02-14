@@ -3,12 +3,14 @@ SQLModel-based database models for the Telegram bot application.
 
 Defines the data models for users, addresses, and notifications.
 """
+
 from datetime import datetime
 from sqlmodel import Field, SQLModel, Relationship
 
 
 class User(SQLModel, table=True):
     """User model representing a Telegram user in the system."""
+
     __tablename__ = "users"
 
     id: int = Field(primary_key=True)
@@ -23,18 +25,16 @@ class User(SQLModel, table=True):
         return f"User(id={self.id}, username={self.username})"
 
     def __repr__(self) -> str:
-        return (
-            f"User(id={self.id}, tg_id={self.tg_id}, "
-            f"username={self.username})"
-        )
+        return f"User(id={self.id}, tg_id={self.tg_id}, " f"username={self.username})"
 
 
 class UserAddress(SQLModel, table=True):
     """Model for storing user addresses and their associated cities."""
+
     __tablename__ = "user_addresses"
 
     id: int = Field(primary_key=True)
-    user_id: int = Field(foreign_key="user.id")
+    user_id: int = Field(foreign_key="users.id")
     address: str
     city: str
 
@@ -54,10 +54,11 @@ class UserAddress(SQLModel, table=True):
 
 class UserNotification(SQLModel, table=True):
     """Model for tracking user notifications about utility services."""
+
     __tablename__ = "user_notifications"
 
     id: int = Field(primary_key=True)
-    user_id: int = Field(foreign_key="user.id")
+    user_id: int = Field(foreign_key="users.id")
     address_id: int = Field(foreign_key="user_addresses.id")
     notification_type: str
     notified_at: datetime

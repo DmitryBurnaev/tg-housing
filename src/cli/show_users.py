@@ -9,7 +9,7 @@ from sqlmodel import select
 
 from src.config.logging import LOGGING_CONFIG
 from src.db.models import User
-from src.db.session import make_sa_session
+from src.db.session import session_scope, create_tables
 from src.handlers.helpers import DT_FORMAT, SERVICE_NAME_MAP
 from src.i18n import _
 from src.providers.shutdowns import ShutDownByServiceInfo, ShutDownProvider
@@ -21,7 +21,9 @@ logger = logging.getLogger(__name__)
 async def find_shutdowns(addresses: list[str]) -> list[Text]:
     """Using fetch_shutdowns find possible shutdowns for user's addresses"""
 
-    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(addresses)
+    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(
+        addresses
+    )
     if not shutdowns_by_service:
         return [_("No shutdowns :)")]
 
@@ -64,7 +66,9 @@ async def show_users(session: AsyncSession) -> None:
 
     logger.info("Current users in database:")
     for user in users:
-        logger.info("ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username)
+        logger.info(
+            "ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username
+        )
         # Print addresses for this user
         if user.addresses:
             for addr in user.addresses:
@@ -75,11 +79,9 @@ async def show_users(session: AsyncSession) -> None:
 
 async def main() -> None:
     """Main entry point for the CLI script."""
-    session = make_sa_session()
-    try:
+    create_tables()
+    async with session_scope() as session:
         await show_users(session)
-    finally:
-        await session.close()
 
 
 if __name__ == "__main__":
