@@ -1,5 +1,3 @@
-
-
 def main() -> None:
     print("Check and notify")
 

@@ -5,6 +5,9 @@ lint:
 format:
 	poetry run ruff format
 
+upgrade:
+	poetry update
+
 run:
 	PYTHONPATH=. poetry run python src/main.py
 
