@@ -1,6 +1,7 @@
 """
 Storage implementation for managing Telegram bot user data with JSON file persistence.
 """
+
 import json
 import logging
 import dataclasses
@@ -10,6 +11,7 @@ from typing import Any, DefaultDict
 from aiogram.fsm.storage.base import BaseStorage, StorageKey, StateType
 
 from src.config.app import TMP_DATA_DIR
+from src.db.repository import UserRepository
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +57,8 @@ class TGStorage(BaseStorage):
 
     async def set_data(self, key: StorageKey, data: dict[str, Any]) -> None:
         """Save user data and persist to storage."""
+        # async with session_scope() as session:
+
         if not (user_data := self.storage.get(key.user_id)):
             user_data = UserDataRecord(id=key.user_id)
 
@@ -64,10 +68,13 @@ class TGStorage(BaseStorage):
 
     async def get_data(self, key: StorageKey) -> dict[str, Any]:
         """Retrieve user data for specified key."""
-        if user_data := self.storage.get(key.user_id):
-            return user_data.data
+        with UserRepository() as repo:
+            user = await repo.get(key.user_id)
 
-        return {}
+        if user is None:
+            return {}
+
+        return user.data
 
     async def close(self) -> None:
         """Clean up resources if needed."""
@@ -78,7 +85,10 @@ class TGStorage(BaseStorage):
             self.data_file_path.touch()
 
         with open(self.data_file_path, "wt", encoding="utf-8") as f:
-            data = {user_id: data_record.dump() for user_id, data_record in self.storage.items()}
+            data = {
+                user_id: data_record.dump()
+                for user_id, data_record in self.storage.items()
+            }
             json.dump(data, f)
 
     def _load_from_file(self) -> dict[int, UserDataRecord]:
@@ -91,4 +101,7 @@ class TGStorage(BaseStorage):
             except (json.JSONDecodeError, OSError) as exc:
                 logger.exception("Couldn't read from storage file: %r", exc)
 
-        return {int(user_id): UserDataRecord.load(user_data) for user_id, user_data in data.items()}
+        return {
+            int(user_id): UserDataRecord.load(user_data)
+            for user_id, user_data in data.items()
+        }

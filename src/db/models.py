@@ -16,6 +16,7 @@ class User(SQLModel, table=True):
     id: int = Field(primary_key=True)
     tg_id: int = Field()
     username: str
+    data: dict = Field()
 
     # Relationships
     addresses: list["UserAddress"] = Relationship(back_populates="user")
