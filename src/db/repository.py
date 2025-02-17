@@ -6,8 +6,11 @@ from typing import Generic, TypeVar, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from src.db.models import User, UserNotification
+from config.app import SupportedCity
+from parsing.data_models import Address
+from src.db.models import User, UserNotification, UserAddress
 from src.db.session import make_sa_session
+from utils import ParsedAddress
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -69,18 +72,52 @@ class BaseRepository(Generic[T]):
 class UserRepository(BaseRepository[User]):
     """User's repository."""
 
+    async def get_addresses(self, user_id: int) -> list[UserAddress]:
+        """Returns list of user's addresses"""
+        user: User = await self.get(user_id)
+        return user.addresses
+
+    async def add_address(
+        self,
+        user_id: int,
+        city: SupportedCity,
+        address: ParsedAddress,
+    ) -> UserAddress:
+        """
+        Adds new address to database.
+        Args:
+            user_id: current user id
+            city: selected city
+            address: user address (got from user's input)
+        Returns:
+            address: new user address
+        """
+        user: User = await self.get(user_id)
+        user_address: UserAddress = UserAddress(
+            user_id=user_id,
+            address=str(address),
+            city=city,
+        )
+        user.addresses.append(user_address)
+        await self.flush_and_commit()
+        return user_address
+
     async def get_notifications(self, user_id: int) -> list[UserNotification]:
+        """Returns list of user's notifications"""
         user = await self.get(user_id)
         return user.notifications
 
     async def has_notification(
-        self, user_id: int, notification_data: dict[str, Any]
+        self,
+        user_id: int,
+        notification_data: dict[str, Any],
     ) -> bool:
         """Searching already sent notifications by provided notification data."""
         user = await self.get(user_id)
         notification_hash = hashlib.sha256(
             json.dumps(notification_data).encode()
         ).hexdigest()
+
         statement = select(UserNotification).where(
             UserNotification.user_id == user.id,
             UserNotification.notification_hash == notification_hash,

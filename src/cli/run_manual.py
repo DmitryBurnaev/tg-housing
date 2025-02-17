@@ -6,7 +6,7 @@ from typing import cast
 
 from src.config.app import SupportedCity, SupportedService
 from src.config.logging import LOGGING_CONFIG
-from src.db.old_models import User
+from parsing.data_models import User
 from src.parsing.main_parsing import BaseParser
 
 logger = logging.getLogger("cli.run_manual")

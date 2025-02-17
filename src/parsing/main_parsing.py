@@ -14,7 +14,7 @@ from src.config.app import (
     SupportedCity,
     SupportedService,
 )
-from src.db.old_models import Address, DateRange
+from parsing.data_models import Address, DateRange
 from src.utils import ADDRESS_DEFAULT_PATTERN
 
 logger = logging.getLogger("parsing.main")
