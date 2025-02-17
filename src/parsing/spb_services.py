@@ -8,7 +8,7 @@ from typing import NamedTuple
 from lxml import html
 
 from src.config.app import SupportedService
-from src.db.old_models import Address, DateRange
+from parsing.data_models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
 from src.utils import parse_address, ParsedAddress, parse_street_name_regex
 
