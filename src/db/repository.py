@@ -1,19 +1,25 @@
 import hashlib
 import json
 import logging
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar, Any, Unpack
 
+from mypy.build import TypedDict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from config.app import SupportedCity
-from parsing.data_models import Address
+from src.config.app import SupportedCity
 from src.db.models import User, UserNotification, UserAddress
 from src.db.session import make_sa_session
-from utils import ParsedAddress
+from src.utils import ParsedAddress
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
+
+
+class UserData(TypedDict):
+    id: int
+    first_name: str
+    last_name: str
 
 
 class BaseRepository(Generic[T]):
@@ -55,9 +61,16 @@ class BaseRepository(Generic[T]):
         statement = select(T).where(T.id == id_)
         return await self.session.execute(statement)
 
-    async def update(self, instance: T, **update_value: dict[str, Any]) -> None:
+    async def create(self, value: dict[str, Any]) -> T:
+        """Creates new instance"""
+        instance = T(**value)
+        self.session.add(instance)
+        await self.flush_and_commit()
+        return instance
+
+    async def update(self, instance: T, **value: dict[str, Any]) -> None:
         """Just updates instance with provided update_value."""
-        for key, value in update_value.items():
+        for key, value in value.items():
             setattr(instance, key, value)
 
         self.session.add(instance)
@@ -71,6 +84,12 @@ class BaseRepository(Generic[T]):
 
 class UserRepository(BaseRepository[User]):
     """User's repository."""
+
+    async def get_or_create(self, id_: int, **user_data: Unpack[UserData]) -> User:
+        user = await self.get(id_)
+        if user is None:
+            user = await self.create(value=user_data)
+        return user
 
     async def get_addresses(self, user_id: int) -> list[UserAddress]:
         """Returns list of user's addresses"""
