@@ -12,7 +12,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 
-from src.db.storage import TGStorage
+from src.db.storage import UserStorage
 from src.config.app import TG_BOT_API_TOKEN
 from src.config.logging import LOGGING_CONFIG
 from src.handlers.bot_handlers import form_router
@@ -25,8 +25,11 @@ async def main() -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
     logging.captureWarnings(capture=True)
 
-    bot = Bot(token=TG_BOT_API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN))
-    dp = Dispatcher(storage=TGStorage())
+    bot = Bot(
+        token=TG_BOT_API_TOKEN,
+        default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
+    )
+    dp = Dispatcher(storage=UserStorage())
     dp.include_router(form_router)
     await dp.start_polling(bot)
 
