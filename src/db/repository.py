@@ -1,7 +1,8 @@
 import hashlib
 import json
 import logging
-from typing import Generic, TypeVar, Any, Unpack
+from types import TracebackType
+from typing import Generic, TypeVar, Any, Unpack, Self
 
 from mypy.build import TypedDict
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,16 +28,23 @@ class BaseRepository(Generic[T]):
     Base repository interface.
     """
 
+    model: type[T]
+
     def __init__(self, auto_commit: bool = True, auto_flush: bool = True) -> None:
         self.session: AsyncSession | None = None
         self.auto_flush: bool = auto_flush
         self.auto_commit: bool = auto_commit
 
-    def __enter__(self) -> "BaseRepository[T]":
+    def __enter__(self) -> Self:
         self.session = make_sa_session()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type[Exception],
+        exc_val: Exception,
+        exc_tb: TracebackType | None,
+    ) -> None:
         self.session = None
 
     async def flush_and_commit(self) -> None:
@@ -58,12 +66,12 @@ class BaseRepository(Generic[T]):
 
     async def get(self, id_: int) -> T:
         """Selects instance by provided ID"""
-        statement = select(T).where(T.id == id_)
+        statement = select(self.model).where(self.model.id == id_)
         return await self.session.execute(statement)
 
     async def create(self, value: dict[str, Any]) -> T:
         """Creates new instance"""
-        instance = T(**value)
+        instance = self.model(**value)
         self.session.add(instance)
         await self.flush_and_commit()
         return instance
@@ -84,6 +92,8 @@ class BaseRepository(Generic[T]):
 
 class UserRepository(BaseRepository[User]):
     """User's repository."""
+
+    model = User
 
     async def get_or_create(self, id_: int, **user_data: Unpack[UserData]) -> User:
         user = await self.get(id_)

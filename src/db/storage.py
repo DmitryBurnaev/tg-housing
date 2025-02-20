@@ -33,11 +33,12 @@ class UserDataRecord:
         return cls(**data)
 
 
-class TGStorage(BaseStorage):
+class UserStorage(BaseStorage):
     """
-    Temporary storage implementation for Telegram bot that persists user data to JSON files.
+    Wrapper around Telegram bot user data storage class,
+    which allows to store user data to the DB (PostgreSQL).
 
-    Implements the aiogram BaseStorage interface while providing JSON file-based persistence
+    Implements the aiogram BaseStorage interface while providing DB persistence
     for user data and state management.
     """
 
