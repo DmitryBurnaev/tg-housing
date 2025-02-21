@@ -49,6 +49,9 @@ class BaseRepository(Generic[T]):
 
     async def flush_and_commit(self) -> None:
         """Sending changes to database."""
+        if not self.session:
+            raise RuntimeError("No active session")
+
         if self.auto_flush:
             assert self.session.flush()
 
@@ -143,9 +146,7 @@ class UserRepository(BaseRepository[User]):
     ) -> bool:
         """Searching already sent notifications by provided notification data."""
         user = await self.get(user_id)
-        notification_hash = hashlib.sha256(
-            json.dumps(notification_data).encode()
-        ).hexdigest()
+        notification_hash = hashlib.sha256(json.dumps(notification_data).encode()).hexdigest()
 
         statement = select(UserNotification).where(
             UserNotification.user_id == user.id,

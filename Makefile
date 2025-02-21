@@ -1,6 +1,6 @@
 lint:
 	poetry run ruff check
-	poetry run mypy
+	poetry run mypy .
 
 format:
 	poetry run ruff format

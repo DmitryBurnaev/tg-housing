@@ -12,6 +12,7 @@ python = "^3.12"
 aiogram = "3.17.0"
 httpx = "0.28.1"
 lxml = "5.3.0"
+lxml-stubs = "0.5.1" # mypy required
 SQLAlchemy = {"version" = "2.0.38", "extras" = ["asyncio"]}
 python-dotenv = "1.0.1"
 sqlmodel = "0.0.22"
@@ -22,9 +23,9 @@ alembic = "1.14.1"
 pytest = "^8.2.0"
 pytest-asyncio = "^0.23.7"
 coverage = "^7.6.0"
-ruff = "^0.4.4"
+ruff = "^0.9.7"
 mypy = "^1.10.1"
-black = "^24.2.0"
+black = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core"]

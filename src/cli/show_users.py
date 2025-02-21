@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 async def find_shutdowns(addresses: list[str]) -> list[Text]:
     """Using fetch_shutdowns find possible shutdowns for user's addresses"""
 
-    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(
-        addresses
-    )
+    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(addresses)
     if not shutdowns_by_service:
         return [_("No shutdowns :)")]
 
@@ -66,9 +64,7 @@ async def show_users(session: AsyncSession) -> None:
 
     logger.info("Current users in database:")
     for user in users:
-        logger.info(
-            "ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username
-        )
+        logger.info("ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username)
         # Print addresses for this user
         if user.addresses:
             for addr in user.addresses:
