@@ -2,7 +2,7 @@ import datetime
 from typing import NamedTuple, Type
 
 from src.config.app import SupportedService, SupportedCity
-from parsing.data_models import Address
+from src.parsing.data_models import Address
 from src.parsing.main_parsing import BaseParser
 
 
@@ -37,14 +37,14 @@ class ShutDownProvider:
         print(f"{shutdowns=}")
         result: list[ShutDownInfo] = []
 
-        for address, data_ranges in shutdowns.items():
+        for address_, data_ranges in shutdowns.items():
             print(address, data_ranges)
             for data_range in data_ranges:
                 result.append(
                     ShutDownInfo(
                         start=data_range.start,
                         end=data_range.end,
-                        raw_address=address.raw,
+                        raw_address=address_.raw,
                         city=user_address.city,
                     )
                 )

@@ -14,7 +14,7 @@ from src.config.app import (
     SupportedCity,
     SupportedService,
 )
-from parsing.data_models import Address, DateRange
+from src.parsing.data_models import Address, DateRange
 from src.utils import ADDRESS_DEFAULT_PATTERN
 
 logger = logging.getLogger("parsing.main")
@@ -65,7 +65,7 @@ class BaseParser(abc.ABC):
     def _get_content(self, service: SupportedService, address: Address) -> str:
         def cashed_filename(url: str) -> str:
             dt = datetime.now(tz=timezone.utc).date().isoformat()
-            return f"{service.lower()}_{dt}_{hashlib.sha256(url.encode("utf-8")).hexdigest()}.html"
+            return f"{service.lower()}_{dt}_{hashlib.sha256(url.encode('utf-8')).hexdigest()}.html"
 
         url = self.urls[service].format(
             city="",
@@ -96,7 +96,9 @@ class BaseParser(abc.ABC):
         return response_data
 
     @abc.abstractmethod
-    def _parse_website(self, service: str, user_address: Address) -> dict[Address, set[DateRange]]:
+    def _parse_website(
+        self, service: SupportedService, address: Address
+    ) -> dict[Address, set[DateRange]]:
         pass
 
     @staticmethod

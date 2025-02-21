@@ -6,9 +6,10 @@ from functools import wraps
 from typing import NamedTuple
 
 from lxml import html
+from lxml.etree import _Element
 
 from src.config.app import SupportedService
-from parsing.data_models import Address, DateRange
+from src.parsing.data_models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
 from src.utils import parse_address, ParsedAddress, parse_street_name_regex
 
@@ -51,7 +52,7 @@ class SPBElectricityParser(BaseParser):
         """
 
         html_content = self._get_content(service, address)
-        tree = html.fromstring(html_content)
+        tree: _Element = html.fromstring(html_content)
         rows = tree.xpath("//table/tbody/tr")
         if not rows:
             logger.info("No data found for service: %s", service)
@@ -282,7 +283,7 @@ class SPBColdWaterParser(BaseParser):
 
             start_dt, finish_dt = self._prepare_dates(row_data.period_start, row_data.period_end)
             logger.debug(
-                "Parsing [%(service)s] Found record: " "%(street)s | %(start)s | %(end)s",
+                "Parsing [%(service)s] Found record: %(street)s | %(start)s | %(end)s",
                 {
                     "service": self.service,
                     "street": row_data.street,

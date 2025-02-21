@@ -86,10 +86,7 @@ class UserStorage(BaseStorage):
             self.data_file_path.touch()
 
         with open(self.data_file_path, "wt", encoding="utf-8") as f:
-            data = {
-                user_id: data_record.dump()
-                for user_id, data_record in self.storage.items()
-            }
+            data = {user_id: data_record.dump() for user_id, data_record in self.storage.items()}
             json.dump(data, f)
 
     def _load_from_file(self) -> dict[int, UserDataRecord]:
@@ -102,7 +99,4 @@ class UserStorage(BaseStorage):
             except (json.JSONDecodeError, OSError) as exc:
                 logger.exception("Couldn't read from storage file: %r", exc)
 
-        return {
-            int(user_id): UserDataRecord.load(user_data)
-            for user_id, user_data in data.items()
-        }
+        return {int(user_id): UserDataRecord.load(user_data) for user_id, user_data in data.items()}

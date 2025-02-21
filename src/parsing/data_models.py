@@ -61,14 +61,14 @@ class DateRange(NamedTuple):
     start: datetime.datetime
     end: datetime.datetime
 
-    def __gt__(self, other: datetime.datetime) -> bool:
+    def __gt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
         if DEBUG_SHUTDOWNS:
             logger.debug("Fake data comparator: %r > %r | always True", self, other)
             return True
 
         return self.end.astimezone(datetime.timezone.utc) >= other
 
-    def __lt__(self, other: datetime.datetime) -> bool:
+    def __lt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
         return self.end.astimezone(datetime.timezone.utc) < other
 
     def __str__(self) -> str:
@@ -93,10 +93,14 @@ class User:
             raw=self.raw_address,
         )
 
-    def echo_results(self, date_ranges: dict[Address, set[DateRange]]) -> None:
+    def echo_results(self, result: dict[Address, set[DateRange]]) -> None:
+        if not self.address:
+            print(f"[{self.name}] No address specified")
+            return
+
         print(f"[{self.name}] \n=== {self.address.raw} ===")
         now_time = datetime.datetime.now(datetime.timezone.utc)
-        for address, date_ranges in date_ranges.items():
+        for address, date_ranges in result.items():
             actual_ranges = []
             for date_range in date_ranges:
                 if date_range > now_time:

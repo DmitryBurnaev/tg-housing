@@ -26,7 +26,7 @@ class User(SQLModel, table=True):
         return f"User(id={self.id}, username={self.username})"
 
     def __repr__(self) -> str:
-        return f"User(id={self.id}, tg_id={self.tg_id}, " f"username={self.username})"
+        return f"User(id={self.id}, tg_id={self.tg_id}, username={self.username})"
 
 
 class UserAddress(SQLModel, table=True):
