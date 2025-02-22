@@ -67,7 +67,7 @@ class BaseRepository(Generic[T]):
             await self.session.rollback()
             raise exc
 
-    async def get(self, id_: int) -> T:
+    async def get(self, id_: int) -> T | None:
         """Selects instance by provided ID"""
         statement = select(self.model).where(self.model.id == id_)
         return await self.session.execute(statement)
@@ -77,6 +77,14 @@ class BaseRepository(Generic[T]):
         instance = self.model(**value)
         self.session.add(instance)
         await self.flush_and_commit()
+        return instance
+
+    async def get_or_create(self, id_: int, value: dict[str, Any]) -> T:
+        """Tries to find instance by ID and create if it wasn't found"""
+        instance = await self.get(id_)
+        if not instance:
+            instance = await self.create(value | {"id": id_})
+
         return instance
 
     async def update(self, instance: T, **value: dict[str, Any]) -> None:
@@ -98,37 +106,37 @@ class UserRepository(BaseRepository[User]):
 
     model = User
 
-    async def get_or_create(self, id_: int, **user_data: Unpack[UserData]) -> User:
-        user = await self.get(id_)
-        if user is None:
-            user = await self.create(value=user_data)
-        return user
-
     async def get_addresses(self, user_id: int) -> list[UserAddress]:
         """Returns list of user's addresses"""
         user: User = await self.get(user_id)
         return user.addresses
 
-    async def add_address(
-        self,
-        user_id: int,
-        city: SupportedCity,
-        address: ParsedAddress,
-    ) -> UserAddress:
+    async def get_addresses_list(self, user_id: int) -> list[str]:
+        """Returns list of user's addresses"""
+        user: User = await self.get(user_id)
+        return [user_address.address for user_address in user.addresses]
+
+    async def update_addresses(self, user: User, new_addresses: list[str]) -> None:
+        """Finds missing addresses and insert this ones"""
+        user_addresses = await self.get_addresses(user.id)
+        plain_addresses = set(user_address.address for user_address in user_addresses)
+        missing_addresses = plain_addresses - set(new_addresses)
+        for address in missing_addresses:
+            await self.add_address(user, address)
+
+    async def add_address(self, user: User, address: str) -> UserAddress:
         """
         Adds new address to database.
         Args:
-            user_id: current user id
-            city: selected city
+            user: current user
             address: user address (got from user's input)
         Returns:
             address: new user address
         """
-        user: User = await self.get(user_id)
         user_address: UserAddress = UserAddress(
-            user_id=user_id,
+            user_id=user.id,
             address=str(address),
-            city=city,
+            city=user.city,
         )
         user.addresses.append(user_address)
         await self.flush_and_commit()
@@ -146,7 +154,9 @@ class UserRepository(BaseRepository[User]):
     ) -> bool:
         """Searching already sent notifications by provided notification data."""
         user = await self.get(user_id)
-        notification_hash = hashlib.sha256(json.dumps(notification_data).encode()).hexdigest()
+        notification_hash = hashlib.sha256(
+            json.dumps(notification_data).encode()
+        ).hexdigest()
 
         statement = select(UserNotification).where(
             UserNotification.user_id == user.id,

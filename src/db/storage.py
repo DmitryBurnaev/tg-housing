@@ -58,7 +58,15 @@ class UserStorage(BaseStorage):
 
     async def set_data(self, key: StorageKey, data: dict[str, Any]) -> None:
         """Save user data and persist to storage."""
-        # async with session_scope() as session:
+        with UserRepository() as repo:
+            user = await repo.get_or_create(
+                id_=key.user_id,
+                value={
+                    "chat_id": key.chat_id,
+                },
+            )
+            await repo.update_addresses()
+            # await repo.
 
         if not (user_data := self.storage.get(key.user_id)):
             user_data = UserDataRecord(id=key.user_id)
@@ -86,7 +94,10 @@ class UserStorage(BaseStorage):
             self.data_file_path.touch()
 
         with open(self.data_file_path, "wt", encoding="utf-8") as f:
-            data = {user_id: data_record.dump() for user_id, data_record in self.storage.items()}
+            data = {
+                user_id: data_record.dump()
+                for user_id, data_record in self.storage.items()
+            }
             json.dump(data, f)
 
     def _load_from_file(self) -> dict[int, UserDataRecord]:
@@ -99,4 +110,7 @@ class UserStorage(BaseStorage):
             except (json.JSONDecodeError, OSError) as exc:
                 logger.exception("Couldn't read from storage file: %r", exc)
 
-        return {int(user_id): UserDataRecord.load(user_data) for user_id, user_data in data.items()}
+        return {
+            int(user_id): UserDataRecord.load(user_data)
+            for user_id, user_data in data.items()
+        }
