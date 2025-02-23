@@ -58,15 +58,15 @@ class UserStorage(BaseStorage):
 
     async def set_data(self, key: StorageKey, data: dict[str, Any]) -> None:
         """Save user data and persist to storage."""
-        with UserRepository() as repo:
-            user = await repo.get_or_create(
+
+        async with UserRepository() as user_repo:
+            user = await user_repo.get_or_create(
                 id_=key.user_id,
                 value={
                     "chat_id": key.chat_id,
                 },
             )
-            await repo.update_addresses()
-            # await repo.
+            await user_repo.update_addresses(user, new_addresses=data["addresses"])
 
         if not (user_data := self.storage.get(key.user_id)):
             user_data = UserDataRecord(id=key.user_id)
