@@ -5,13 +5,14 @@ from types import TracebackType
 from typing import Generic, TypeVar, Any, Self
 
 from mypy.build import TypedDict
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
+from db.models_sa import BaseModel
 from src.db.models import User, UserNotification, UserAddress
 from src.db.session import make_sa_session
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 logger = logging.getLogger(__name__)
 
 
