@@ -2,16 +2,14 @@ import hashlib
 import json
 import logging
 from types import TracebackType
-from typing import Generic, TypeVar, Any, Unpack, Self
+from typing import Generic, TypeVar, Any, Self
 
 from mypy.build import TypedDict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from src.config.app import SupportedCity
 from src.db.models import User, UserNotification, UserAddress
 from src.db.session import make_sa_session
-from src.utils import ParsedAddress
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
@@ -35,16 +33,17 @@ class BaseRepository(Generic[T]):
         self.auto_flush: bool = auto_flush
         self.auto_commit: bool = auto_commit
 
-    def __enter__(self) -> Self:
+    async def __aenter__(self) -> Self:
         self.session = make_sa_session()
         return self
 
-    def __exit__(
+    async def __aexit__(
         self,
         exc_type: type[Exception],
         exc_val: Exception,
         exc_tb: TracebackType | None,
     ) -> None:
+        await self.session.close()
         self.session = None
 
     async def flush_and_commit(self) -> None:
