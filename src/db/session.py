@@ -2,9 +2,8 @@ import logging
 import contextlib
 from typing import AsyncGenerator
 
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Session, create_engine
 
 from src.config.app import DATABASE_URL, DATABASE_URL_ASYNC
 
