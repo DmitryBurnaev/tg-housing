@@ -48,7 +48,7 @@ RESOURCE_URLS = {
             "city={city}&date_start={date_start}&date_finish={date_finish}&street={street_name}"
         ),
         SupportedService.HOT_WATER: (
-            "https://www.gptek.spb.ru/grafik/?" "street={street_name}+{street_prefix}&house={house}"
+            "https://www.gptek.spb.ru/grafik/?street={street_name}+{street_prefix}&house={house}"
         ),
         SupportedService.COLD_WATER: "https://www.vodokanal.spb.ru/presscentr/remontnye_raboty/",
     }

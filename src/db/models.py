@@ -61,6 +61,7 @@ class UserNotification(SQLModel, table=True):
     id: int = Field(primary_key=True)
     user_id: int = Field(foreign_key="users.id")
     address_id: int = Field(foreign_key="user_addresses.id")
+
     notification_type: str
     notified_at: datetime
 
