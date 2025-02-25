@@ -3,7 +3,6 @@ import contextlib
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlmodel import SQLModel, Session, create_engine
 
 from src.config.app import DATABASE_URL, DATABASE_URL_ASYNC
 
@@ -35,9 +34,9 @@ async def session_scope() -> AsyncGenerator[AsyncSession, None]:
         logger.debug("Session closed")
 
 
-def create_tables() -> None:
-    """Simple helper function to create all tables (no using alembic yet)"""
-    logger.debug("Creating all tables for DB %s", DATABASE_URL)
-    engine = create_engine(DATABASE_URL)
-    SQLModel.metadata.create_all(engine)
-    logger.info("Successfully created all tables for DB %s", DATABASE_URL)
+# def create_tables() -> None:
+#     """Simple helper function to create all tables (no using alembic yet)"""
+#     logger.debug("Creating all tables for DB %s", DATABASE_URL)
+#     engine = create_engine(DATABASE_URL)
+#     SQLModel.metadata.create_all(engine)
+#     logger.info("Successfully created all tables for DB %s", DATABASE_URL)

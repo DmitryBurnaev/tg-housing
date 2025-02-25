@@ -1,73 +1,85 @@
-"""
-SQLModel-based database models for the Telegram bot application.
-
-Defines the data models for users, addresses, and notifications.
-"""
-
 from datetime import datetime
-from sqlmodel import Field, SQLModel, Relationship
+from typing import Optional
+
+from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
+
+from src.utils import utcnow
 
 
-class User(SQLModel, table=True):
+class BaseModel(DeclarativeBase):
+    pass
+
+
+class User(BaseModel):
     """User model representing a Telegram user in the system."""
 
     __tablename__ = "users"
 
-    id: int = Field(primary_key=True)
-    tg_id: int = Field()
-    username: str
-    data: dict = Field()
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255))
+    chat_id: Mapped[int]
 
     # Relationships
-    addresses: list["UserAddress"] = Relationship(back_populates="user")
-    notifications: list["UserNotification"] = Relationship(back_populates="user")
+    addresses: Mapped[list["UserAddress"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    notifications: Mapped[list["UserNotification"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     def __str__(self) -> str:
-        return f"User(id={self.id}, username={self.username})"
+        return f"User {self.name} "
 
     def __repr__(self) -> str:
-        return f"User(id={self.id}, tg_id={self.tg_id}, username={self.username})"
+        return f"User(id={self.id!r}, name={self.name!r}, fullname={self.fullname!r})"
 
 
-class UserAddress(SQLModel, table=True):
-    """Model for storing user addresses and their associated cities."""
+class UserAddress(BaseModel):
+    """User address model representing a Telegram user in the system."""
 
     __tablename__ = "user_addresses"
 
-    id: int = Field(primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
-    address: str
-    city: str
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    city: Mapped[str]
+    address: Mapped[str]
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
     # Relationships
-    user: User = Relationship(back_populates="addresses")
-    notifications: list["UserNotification"] = Relationship(back_populates="address")
-
-    def __str__(self) -> str:
-        return f"UserAddress(address={self.address}, city={self.city})"
+    user: Mapped["User"] = relationship(back_populates="addresses")
 
     def __repr__(self) -> str:
         return (
-            f"UserAddress(id={self.id}, user_id={self.user_id}, "
-            f"address={self.address}, city={self.city})"
+            f"Address("
+            f"id={self.id!r}, "
+            f"city={self.city!r}, "
+            f"user_id={self.user_id!r}, "
+            f"address={self.address!r}"
+            f")"
         )
 
 
-class UserNotification(SQLModel, table=True):
+class UserNotification(BaseModel):
     """Model for tracking user notifications about utility services."""
 
     __tablename__ = "user_notifications"
 
-    id: int = Field(primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
-    address_id: int = Field(foreign_key="user_addresses.id")
-
-    notification_type: str
-    notified_at: datetime
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    address_id: Mapped[int] = mapped_column(ForeignKey("user_addresses.id"))
+    notification_type: Mapped[str]
+    notification_hash: Mapped[str]
+    notified_at: Mapped[datetime]
 
     # Relationships
-    user: User = Relationship(back_populates="notifications")
-    address: UserAddress = Relationship(back_populates="notifications")
+    user: Mapped["User"] = relationship(back_populates="notifications")
+    address: Mapped["UserAddress"] = relationship(back_populates="notifications")
 
     def __str__(self) -> str:
         return f"UserNotification(type={self.notification_type}, at={self.notified_at})"

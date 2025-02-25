@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.app import SupportedCity
-from src.db.models_sa import BaseModel, User, UserNotification, UserAddress
+from src.db.models import BaseModel, User, UserNotification, UserAddress
 from src.db.session import make_sa_session
 
 T = TypeVar("T", bound=BaseModel)
@@ -128,7 +128,9 @@ class UserRepository(BaseRepository[User]):
         for address in missing_addresses:
             await self.add_address(user, address)
 
-    async def add_address(self, user: User, city: SupportedCity, address: str) -> UserAddress:
+    async def add_address(
+        self, user: User, city: SupportedCity, address: str
+    ) -> UserAddress:
         """
         Adds new address to database.
         Args:
@@ -162,7 +164,9 @@ class UserRepository(BaseRepository[User]):
     ) -> bool:
         """Searching already sent notifications by provided notification data."""
         user = await self.get(user_id)
-        notification_hash = hashlib.sha256(json.dumps(notification_data).encode()).hexdigest()
+        notification_hash = hashlib.sha256(
+            json.dumps(notification_data).encode()
+        ).hexdigest()
 
         statement = select(UserNotification).where(
             UserNotification.user_id == user.id,
