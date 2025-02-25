@@ -1,3 +1,4 @@
+import datetime
 import re
 import logging
 from typing import NamedTuple
@@ -33,7 +34,9 @@ STREET_ELEMENTS = r"""
 тракт\.?|
 туп\.?|
 ул\.?|Ул\.?|
-ш\.?""".replace("\n", "")
+ш\.?""".replace(
+    "\n", ""
+)
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
     rf"^(?P<street_prefix>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?),?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
@@ -67,7 +70,9 @@ class ParsedAddress(NamedTuple):
         )
 
 
-def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> ParsedAddress:
+def parse_address(
+    address: str, pattern: re.Pattern[str] | None = None
+) -> ParsedAddress:
     """
     Searches street and house (or houses' range) from given string
 
@@ -85,7 +90,9 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
 
         street_name = match.group("street_name").strip()
         start_house = int(match.group("start_house"))
-        end_house = int(match.group("end_house")) if match.group("end_house") else start_house
+        end_house = (
+            int(match.group("end_house")) if match.group("end_house") else start_house
+        )
         houses = list(range(start_house, end_house + 1))
         parsed_address = ParsedAddress(
             street_prefix=street_prefix or "",
@@ -134,7 +141,9 @@ def parse_street_name_regex(address: str) -> ParsedAddress:
     :return <ParsedAddress> like ParsedAddress("пр-кт", "Наименование проспекта", [])
     """
     regular_exp = rf"(.*?)({STREET_ELEMENTS})"
-    logger.debug("Using regular expressions for street: '%s' | reg: '%s'", address, regular_exp)
+    logger.debug(
+        "Using regular expressions for street: '%s' | reg: '%s'", address, regular_exp
+    )
 
     if match := re.search(regular_exp, address):
         street_name, prefix = match.groups()
@@ -145,3 +154,8 @@ def parse_street_name_regex(address: str) -> ParsedAddress:
         parsed_address = ParsedAddress(street_name=address, street_prefix="", houses=[])
 
     return parsed_address
+
+
+def utcnow() -> datetime.datetime:
+    """Just simple wrapper for deprecated datetime.utcnow"""
+    return datetime.datetime.now(datetime.UTC)
