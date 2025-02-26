@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
-from src.config.app import DATABASE_URL, DATABASE_URL_ASYNC
+from src.config.app import DATABASE_URL_ASYNC
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +32,3 @@ async def session_scope() -> AsyncGenerator[AsyncSession, None]:
     finally:
         await session.close()
         logger.debug("Session closed")
-
-
-# def create_tables() -> None:
-#     """Simple helper function to create all tables (no using alembic yet)"""
-#     logger.debug("Creating all tables for DB %s", DATABASE_URL)
-#     engine = create_engine(DATABASE_URL)
-#     SQLModel.metadata.create_all(engine)
-#     logger.info("Successfully created all tables for DB %s", DATABASE_URL)

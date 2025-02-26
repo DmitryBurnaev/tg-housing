@@ -6,13 +6,14 @@ from typing import Generic, TypeVar, Any, Self
 
 from mypy.build import TypedDict
 from sqlalchemy import select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.app import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
 from src.db.session import make_sa_session
 
-T = TypeVar("T", bound=BaseModel)
+ModelT = TypeVar("ModelT", bound=BaseModel)
 logger = logging.getLogger(__name__)
 
 
@@ -22,15 +23,15 @@ class UserData(TypedDict):
     last_name: str
 
 
-class BaseRepository(Generic[T]):
+class BaseRepository(Generic[ModelT]):
     """
     Base repository interface.
     """
 
-    model: type[T]
+    model: type[ModelT]
+    session: AsyncSession
 
     def __init__(self, auto_commit: bool = True, auto_flush: bool = True) -> None:
-        self.session: AsyncSession | None = None
         self.auto_flush: bool = auto_flush
         self.auto_commit: bool = auto_commit
 
@@ -44,8 +45,11 @@ class BaseRepository(Generic[T]):
         exc_val: Exception,
         exc_tb: TracebackType | None,
     ) -> None:
+        if not self.session:
+            logger.debug("Session already closed")
+            return
+
         await self.session.close()
-        self.session = None
 
     async def flush_and_commit(self) -> None:
         """Sending changes to database."""
@@ -67,23 +71,23 @@ class BaseRepository(Generic[T]):
             await self.session.rollback()
             raise exc
 
-    async def get(self, id_: int) -> T | None:
+    async def get(self, id_: int) -> ModelT:
         """Selects instance by provided ID"""
         statement = select(self.model).where(self.model.id == id_)
         result = await self.session.execute(statement)
-        if not result:
-            return None
+        if not (row := result.fetchone()):
+            raise NoResultFound
 
-        return await result.fetchone()
+        return row[0]
 
-    async def create(self, value: dict[str, Any]) -> T:
+    async def create(self, value: dict[str, Any]) -> ModelT:
         """Creates new instance"""
         instance = self.model(**value)
         self.session.add(instance)
         await self.flush_and_commit()
         return instance
 
-    async def get_or_create(self, id_: int, value: dict[str, Any]) -> T:
+    async def get_or_create(self, id_: int, value: dict[str, Any]) -> ModelT:
         """Tries to find instance by ID and create if it wasn't found"""
         instance = await self.get(id_)
         if not instance:
@@ -91,7 +95,7 @@ class BaseRepository(Generic[T]):
 
         return instance
 
-    async def update(self, instance: T, **value: dict[str, Any]) -> None:
+    async def update(self, instance: ModelT, **value: dict[str, Any]) -> None:
         """Just updates instance with provided update_value."""
         for key, value in value.items():
             setattr(instance, key, value)
@@ -99,7 +103,7 @@ class BaseRepository(Generic[T]):
         self.session.add(instance)
         await self.flush_and_commit()
 
-    async def delete(self, instance: T) -> None:
+    async def delete(self, instance: ModelT) -> None:
         """Remove the instance from the DB."""
         await self.session.delete(instance)
         await self.flush_and_commit()
@@ -120,13 +124,15 @@ class UserRepository(BaseRepository[User]):
         user: User = await self.get(user_id)
         return [user_address.address for user_address in user.addresses]
 
-    async def update_addresses(self, user: User, new_addresses: list[str]) -> None:
+    async def update_addresses(
+        self, user: User, city: SupportedCity, new_addresses: list[str]
+    ) -> None:
         """Finds missing addresses and insert this ones"""
         user_addresses = await self.get_addresses(user.id)
         plain_addresses = set(user_address.address for user_address in user_addresses)
         missing_addresses = plain_addresses - set(new_addresses)
         for address in missing_addresses:
-            await self.add_address(user, address)
+            await self.add_address(user, city=city, address=address)
 
     async def add_address(
         self, user: User, city: SupportedCity, address: str

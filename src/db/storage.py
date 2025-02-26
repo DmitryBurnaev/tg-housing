@@ -2,12 +2,12 @@
 Storage implementation for managing Telegram bot user data with JSON file persistence.
 """
 
-import json
 import logging
 import dataclasses
 from collections import defaultdict
 from typing import Any, DefaultDict
 
+from aiogram.fsm.state import State
 from aiogram.fsm.storage.base import BaseStorage, StorageKey, StateType
 
 from src.config.app import TMP_DATA_DIR
@@ -45,16 +45,15 @@ class UserStorage(BaseStorage):
     data_file_path = TMP_DATA_DIR / "user_address.json"
 
     def __init__(self) -> None:
-        self.storage: dict[int, UserDataRecord] = self._load_from_file()
-        self.state: DefaultDict[StorageKey, StateType] = defaultdict(None)
+        self.storage: DefaultDict[StorageKey, str | None] = defaultdict(None)
 
     async def set_state(self, key: StorageKey, state: StateType = None) -> None:
         """Set state for specified key."""
-        self.state[key] = state
+        self.storage[key] = state.state if isinstance(state, State) else state
 
-    async def get_state(self, key: StorageKey) -> StateType | None:
+    async def get_state(self, key: StorageKey) -> str | None:
         """Retrieve state for specified key."""
-        return self.state.get(key)
+        return self.storage[key]
 
     async def set_data(self, key: StorageKey, data: dict[str, Any]) -> None:
         """Save user data and persist to storage."""
@@ -66,45 +65,23 @@ class UserStorage(BaseStorage):
                     "chat_id": key.chat_id,
                 },
             )
-            await user_repo.update_addresses(user, new_addresses=data["addresses"])
-
-        if not (user_data := self.storage.get(key.user_id)):
-            user_data = UserDataRecord(id=key.user_id)
-
-        user_data.data = data
-        self.storage[key.user_id] = user_data
-        self._save_to_file()
+            city = data.get("city")
+            address = data.get("address")
+            if city and address:
+                await user_repo.update_addresses(user, city=city, new_addresses=address)
 
     async def get_data(self, key: StorageKey) -> dict[str, Any]:
         """Retrieve user data for specified key."""
-        with UserRepository() as repo:
+        async with UserRepository() as repo:
             user = await repo.get(key.user_id)
 
         if user is None:
             return {}
 
-        return user.data
+        return {
+            "chat_id": user.chat_id,
+            "addresses": user.addresses,
+        }
 
     async def close(self) -> None:
         """Clean up resources if needed."""
-
-    def _save_to_file(self) -> None:
-        """Temp method for saving user's address (will be placed to use SQLite instead"""
-        if not self.data_file_path.exists():
-            self.data_file_path.touch()
-
-        with open(self.data_file_path, "wt", encoding="utf-8") as f:
-            data = {user_id: data_record.dump() for user_id, data_record in self.storage.items()}
-            json.dump(data, f)
-
-    def _load_from_file(self) -> dict[int, UserDataRecord]:
-        """Temp method for saving user's address (will be placed to use SQLite instead"""
-        data = {}
-        if self.data_file_path.exists():
-            try:
-                with open(self.data_file_path, "rt", encoding="utf-8") as f:
-                    data = json.load(f)
-            except (json.JSONDecodeError, OSError) as exc:
-                logger.exception("Couldn't read from storage file: %r", exc)
-
-        return {int(user_id): UserDataRecord.load(user_data) for user_id, user_data in data.items()}
