@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy import String
@@ -12,7 +11,7 @@ from src.utils import utcnow
 
 
 class BaseModel(DeclarativeBase):
-    pass
+    id: Mapped[int]
 
 
 class User(BaseModel):
@@ -36,7 +35,7 @@ class User(BaseModel):
         return f"User {self.name} "
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, fullname={self.fullname!r})"
+        return f"User(id={self.id!r}, name={self.name!r}, name={self.name!r})"
 
 
 class UserAddress(BaseModel):
