@@ -2,12 +2,13 @@ import hashlib
 import json
 import logging
 from types import TracebackType
-from typing import Generic, TypeVar, Any, Self
+from typing import Generic, TypeVar, Any, Self, Unpack, List
 
 from mypy.build import TypedDict
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Mapped
 
 from src.config.app import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
@@ -17,10 +18,8 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 logger = logging.getLogger(__name__)
 
 
-class UserData(TypedDict):
-    id: int
-    first_name: str
-    last_name: str
+class UsersFilter(TypedDict):
+    city: SupportedCity
 
 
 class BaseRepository(Generic[ModelT]):
@@ -29,14 +28,20 @@ class BaseRepository(Generic[ModelT]):
     """
 
     model: type[ModelT]
-    session: AsyncSession
 
-    def __init__(self, auto_commit: bool = True, auto_flush: bool = True) -> None:
+    def __init__(
+        self,
+        session: AsyncSession | None = None,
+        auto_commit: bool = True,
+        auto_flush: bool = True,
+    ) -> None:
         self.auto_flush: bool = auto_flush
         self.auto_commit: bool = auto_commit
+        self.session: AsyncSession | None = session
 
     async def __aenter__(self) -> Self:
-        self.session = make_sa_session()
+        if not self.session:
+            self.session = make_sa_session()
         return self
 
     async def __aexit__(
@@ -50,6 +55,7 @@ class BaseRepository(Generic[ModelT]):
             return
 
         await self.session.close()
+        self.session = None
 
     async def flush_and_commit(self) -> None:
         """Sending changes to database."""
@@ -73,12 +79,18 @@ class BaseRepository(Generic[ModelT]):
 
     async def get(self, id_: int) -> ModelT:
         """Selects instance by provided ID"""
-        statement = select(self.model).where(self.model.id == id_)
+        statement = select(self.model).filter_by(id=id_)
         result = await self.session.execute(statement)
         if not (row := result.fetchone()):
             raise NoResultFound
 
         return row[0]
+
+    async def list(self, **filters) -> list[ModelT]:
+        """Selects instances from DB"""
+        statement = select(self.model).filter_by(**filters)
+        result = await self.session.execute(statement)
+        return [row[0] for row in result.fetchall()]
 
     async def create(self, value: dict[str, Any]) -> ModelT:
         """Creates new instance"""
@@ -114,8 +126,26 @@ class UserRepository(BaseRepository[User]):
 
     model = User
 
+    async def get_list(self, **filter_kwargs: Unpack[UsersFilter]) -> list[User]:
+        """
+        Returns all users (filtered by provided filter_kwargs)
+        """
+
+        def prepare_filter_value(value: Any) -> str | int:
+            if isinstance(value, int):
+                return value
+            return str(value)
+
+        # TODO: do we really need this method?
+        filters: dict[str, str | int] = {
+            attr: prepare_filter_value(value) for attr, value in filter_kwargs.items()
+        }
+        return await self.list(**filter_kwargs)
+
     async def get_addresses(self, user_id: int) -> list[UserAddress]:
-        """Returns list of user's addresses"""
+        """
+        Returns list of user's addresses
+        """
         user: User = await self.get(user_id)
         return user.addresses
 

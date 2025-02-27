@@ -5,13 +5,13 @@ import logging.config
 
 from aiogram.utils.formatting import Text, as_key_value, as_marked_section
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
-from src.config.logging import LOGGING_CONFIG
-from src.db.old_models import User
-from src.db.session import session_scope, create_tables
-from src.handlers.helpers import DT_FORMAT, SERVICE_NAME_MAP
 from src.i18n import _
+from src.config.app import SupportedCity
+from src.db.repository import UserRepository
+from src.config.logging import LOGGING_CONFIG
+from src.db.session import session_scope
+from src.handlers.helpers import DT_FORMAT, SERVICE_NAME_MAP
 from src.providers.shutdowns import ShutDownByServiceInfo, ShutDownProvider
 
 logging.config.dictConfig(LOGGING_CONFIG)
@@ -25,9 +25,9 @@ async def find_shutdowns(addresses: list[str]) -> list[Text]:
         addresses
     )
     if not shutdowns_by_service:
-        return [_("No shutdowns :)")]
+        return [Text(_("No shutdowns :)"))]
 
-    result = []
+    result: list[Text] = []
     for shutdown_by_service in shutdowns_by_service:
         if not shutdown_by_service.shutdowns:
             continue
@@ -43,32 +43,24 @@ async def find_shutdowns(addresses: list[str]) -> list[Text]:
                     marker="   - ",
                 )
             )
-        result.append(
-            as_marked_section(
-                title,
-                *values,
-                marker=" ⚠︎ ",
-            )
-        )
+
+        result.append(as_marked_section(title, *values, marker=" ⚠︎ "))
 
     return result
 
 
 async def show_users(session: AsyncSession) -> None:
     """Fetch and display all users from the database."""
-    query = select(User)
-    result = await session.execute(query)
-    users = result.scalars().all()
 
+    repository = UserRepository(session)
+    users = await repository.get_list(city=SupportedCity.SPB)
     if not users:
         logger.info("No users found in database")
         return
 
     logger.info("Current users in database:")
     for user in users:
-        logger.info(
-            "ID: %d, Telegram ID: %d, Username: %s", user.id, user.tg_id, user.username
-        )
+        logger.info("ID: %d, Telegram ID: %d, User: %s", user.id, user, user.name)
         # Print addresses for this user
         if user.addresses:
             for addr in user.addresses:
@@ -79,7 +71,6 @@ async def show_users(session: AsyncSession) -> None:
 
 async def main() -> None:
     """Main entry point for the CLI script."""
-    create_tables()
     async with session_scope() as session:
         await show_users(session)
 
