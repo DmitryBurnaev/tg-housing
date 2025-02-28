@@ -5,12 +5,14 @@ Storage implementation for managing Telegram bot user data with JSON file persis
 import logging
 import dataclasses
 from collections import defaultdict
-from typing import Any, DefaultDict
+from typing import Any, DefaultDict, Dict
 
 from aiogram.fsm.state import State
 from aiogram.fsm.storage.base import BaseStorage, StorageKey, StateType
+from aiogram.types import User as TelegramUser
 
-from src.config.app import TMP_DATA_DIR
+from src.config.app import SupportedCity, TMP_DATA_DIR
+from src.db.models import User
 from src.db.repository import UserRepository
 
 logger = logging.getLogger(__name__)
@@ -55,20 +57,39 @@ class UserStorage(BaseStorage):
         """Retrieve state for specified key."""
         return self.storage[key]
 
-    async def set_data(self, key: StorageKey, data: dict[str, Any]) -> None:
-        """Save user data and persist to storage."""
+    async def set_data(self, key: StorageKey, data: Dict[str, Any]) -> None:
+        """Just requires from abstract base class"""
+        pass
+
+    async def update_data(
+        self, key: StorageKey, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Update users data (and related items like addresses) for specified key.
+        """
+        tg_user: TelegramUser | None = data.get("user")
+        if not tg_user:
+            raise ValueError("User data not found.")
+
+        city: SupportedCity | None = data.get("city")
+        address: str | None = data.get("address")
+        if not city or not address:
+            raise ValueError("Address data not found.")
 
         async with UserRepository() as user_repo:
-            user = await user_repo.get_or_create(
-                id_=key.user_id,
-                value={
-                    "chat_id": key.chat_id,
-                },
-            )
-            city = data.get("city")
-            address = data.get("address")
-            if city and address:
-                await user_repo.update_addresses(user, city=city, new_addresses=address)
+            user = await self._get_or_create_user(user_repo, tg_user, key)
+            await user_repo.update_addresses(user, city=city, new_addresses=[address])
+
+        return data
+
+    @staticmethod
+    async def _get_or_create_user(
+        repo: UserRepository, tg_user: TelegramUser, key: StorageKey
+    ) -> User:
+        user = await repo.get_or_create(
+            tg_user.id, value={"name": tg_user.full_name, "chat_id": key.chat_id}
+        )
+        return user
 
     async def get_data(self, key: StorageKey) -> dict[str, Any]:
         """Retrieve user data for specified key."""
