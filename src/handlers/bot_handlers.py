@@ -10,8 +10,14 @@ from aiogram import F, Router
 from aiogram.utils import markdown
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    Message,
+    ReplyKeyboardRemove,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
+from src.config.app import SupportedCity
 from src.i18n import _
 from src.handlers.helpers import (
     UserAddressStatesGroup,
@@ -45,7 +51,9 @@ async def command_address(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(UserAddressStatesGroup.address, F.text.casefold() == _("Add Address").lower())
+@form_router.message(
+    UserAddressStatesGroup.address, F.text.casefold() == _("Add Address").lower()
+)
 async def add_address_command(message: Message, state: FSMContext) -> None:
     """
     Handle the 'add address' command from the user.
@@ -110,12 +118,22 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
     Returns:
         None
     """
+    if not message.from_user:
+        await answer(message, _("Sorry, you are not authorized to do that."))
+        return
+
+    if not message.text:
+        await answer(message, _("Please enter a new address."))
+        return
+
     new_address: ParsedAddress = parse_address(message.text)
     if not new_address.completed:
         await state.set_state(UserAddressStatesGroup.add_address)
         await answer(
             message,
-            _('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
+            _(
+                'Ups... we can\'t parse address "{message_text} (got {new_address})".'
+            ).format(
                 message_text=message.text,
                 new_address=str(new_address),
             ),
@@ -124,14 +142,18 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         return
 
     if new_address:
-        addresses = await get_addresses(state)
-        addresses.append(str(new_address))
-        await state.update_data(addresses=addresses)
+        await state.update_data(
+            user=message.from_user,
+            city=SupportedCity.SPB,
+            addres=new_address,
+        )
         await state.set_state(state=None)
 
     await answer(
         message,
-        _('Ok, I\'ll remember your new address "{new_address}".').format(new_address=new_address),
+        _('Ok, I\'ll remember your new address "{new_address}".').format(
+            new_address=new_address
+        ),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -192,9 +214,15 @@ async def info_handler(message: Message, state: FSMContext) -> None:
     Returns:
         None
     """
+    if not message.from_user:
+        await answer(message, _("Sorry, you are not authorized to do that."))
+        return
+
     await answer(
         message,
-        _("Hi, {full_name}!").format(full_name=markdown.bold(message.from_user.full_name)),
+        _("Hi, {full_name}!").format(
+            full_name=markdown.bold(message.from_user.full_name)
+        ),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -214,6 +242,10 @@ async def clear_handler(message: Message, state: FSMContext) -> None:
         - None
 
     """
+    if not message.from_user:
+        await answer(message, _("Sorry, you are not authorized to do that."))
+        return
+
     await state.clear()
     await answer(
         message,

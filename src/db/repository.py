@@ -2,13 +2,12 @@ import hashlib
 import json
 import logging
 from types import TracebackType
-from typing import Generic, TypeVar, Any, Self, Unpack, List
+from typing import Generic, TypeVar, Any, Self, override
 
 from mypy.build import TypedDict
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped
 
 from src.config.app import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
@@ -37,11 +36,11 @@ class BaseRepository(Generic[ModelT]):
     ) -> None:
         self.auto_flush: bool = auto_flush
         self.auto_commit: bool = auto_commit
-        self.session: AsyncSession | None = session
+        self.__session: AsyncSession | None = session
 
     async def __aenter__(self) -> Self:
-        if not self.session:
-            self.session = make_sa_session()
+        if not self.__session:
+            self.__session = make_sa_session()
         return self
 
     async def __aexit__(
@@ -50,12 +49,19 @@ class BaseRepository(Generic[ModelT]):
         exc_val: Exception,
         exc_tb: TracebackType | None,
     ) -> None:
-        if not self.session:
+        if not self.__session:
             logger.debug("Session already closed")
             return
 
-        await self.session.close()
-        self.session = None
+        await self.__session.close()
+        self.__session = None
+
+    @property
+    def session(self) -> AsyncSession:
+        if not self.__session:
+            raise RuntimeError("Session not open")
+
+        return self.__session
 
     async def flush_and_commit(self) -> None:
         """Sending changes to database."""
@@ -86,8 +92,9 @@ class BaseRepository(Generic[ModelT]):
 
         return row[0]
 
-    async def list(self, **filters) -> list[ModelT]:
+    async def all(self, **filters) -> list[ModelT]:
         """Selects instances from DB"""
+
         statement = select(self.model).filter_by(**filters)
         result = await self.session.execute(statement)
         return [row[0] for row in result.fetchall()]
@@ -126,21 +133,11 @@ class UserRepository(BaseRepository[User]):
 
     model = User
 
-    async def get_list(self, **filter_kwargs: Unpack[UsersFilter]) -> list[User]:
-        """
-        Returns all users (filtered by provided filter_kwargs)
-        """
-
-        def prepare_filter_value(value: Any) -> str | int:
-            if isinstance(value, int):
-                return value
-            return str(value)
-
-        # TODO: do we really need this method?
-        filters: dict[str, str | int] = {
-            attr: prepare_filter_value(value) for attr, value in filter_kwargs.items()
-        }
-        return await self.list(**filter_kwargs)
+    @override
+    async def all(
+        self, city: SupportedCity = SupportedCity.SPB, **filters
+    ) -> list[User]:
+        return await super().all(city=city, **filters)
 
     async def get_addresses(self, user_id: int) -> list[UserAddress]:
         """
