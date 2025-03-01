@@ -134,9 +134,7 @@ class UserRepository(BaseRepository[User]):
     model = User
 
     @override
-    async def all(
-        self, city: SupportedCity = SupportedCity.SPB, **filters
-    ) -> list[User]:
+    async def all(self, city: SupportedCity = SupportedCity.SPB, **filters) -> list[User]:
         return await super().all(city=city, **filters)
 
     async def get_addresses(self, user_id: int) -> list[UserAddress]:
@@ -161,9 +159,7 @@ class UserRepository(BaseRepository[User]):
         for address in missing_addresses:
             await self.add_address(user, city=city, address=address)
 
-    async def add_address(
-        self, user: User, city: SupportedCity, address: str
-    ) -> UserAddress:
+    async def add_address(self, user: User, city: SupportedCity, address: str) -> UserAddress:
         """
         Adds new address to database.
         Args:
@@ -197,9 +193,7 @@ class UserRepository(BaseRepository[User]):
     ) -> bool:
         """Searching already sent notifications by provided notification data."""
         user = await self.get(user_id)
-        notification_hash = hashlib.sha256(
-            json.dumps(notification_data).encode()
-        ).hexdigest()
+        notification_hash = hashlib.sha256(json.dumps(notification_data).encode()).hexdigest()
 
         statement = select(UserNotification).where(
             UserNotification.user_id == user.id,

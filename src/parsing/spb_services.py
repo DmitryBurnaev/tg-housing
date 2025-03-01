@@ -3,7 +3,7 @@ import pprint
 from datetime import datetime, date
 from collections import defaultdict
 from functools import wraps
-from typing import NamedTuple
+from typing import NamedTuple, Iterable, cast
 
 from lxml import html
 from lxml.etree import _Element
@@ -53,7 +53,7 @@ class SPBElectricityParser(BaseParser):
 
         html_content = self._get_content(service, address)
         tree: _Element = html.fromstring(html_content)
-        rows = tree.xpath("//table/tbody/tr")
+        rows: Iterable[_Element] = cast(Iterable, tree.xpath("//table/tbody/tr"))
         if not rows:
             logger.info("No data found for service: %s", service)
             return {}
@@ -61,48 +61,53 @@ class SPBElectricityParser(BaseParser):
         result: defaultdict[Address, set] = defaultdict(set)
 
         for row in rows:
-            if row_streets := row.xpath(".//td[@class='rowStreets']"):
-                addresses = row_streets[0].xpath(".//span/text()")
-                dates = [td.text for td in row.xpath("td")[3:7]]
-                date_start, time_start, date_end, time_end = map(self._clear_string, dates)
+            row_streets: list[_Element] = cast(
+                list[_Element], row.xpath(".//td[@class='rowStreets']")
+            )
+            if not row_streets:
+                logger.debug("No data found for row: %s", row)
+                continue
 
-                if len(addresses) == 1:
-                    addresses = addresses[0]
-                else:
-                    logger.warning(
-                        "Streets count more than 1: %(service)s | %(address)s",
-                        {"service": service, "address": address},
-                    )
-                    addresses = ",".join(addresses)
+            addresses: list[str] = cast(list, row_streets[0].xpath(".//span/text()"))
+            dates_range: list[_Element] = cast(list, row.xpath("td")[3:7])
+            dates = [td.text for td in dates_range]
+            date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
-                start_time = self._prepare_time(date_start, time_start)
-                end_time = self._prepare_time(date_end, time_end)
-                for raw_address in addresses.split(","):
-                    raw_address = self._clear_string(raw_address)
-                    parsed_address = parse_address(
-                        pattern=self.address_pattern, address=raw_address
+            if len(addresses) == 1:
+                addresses = addresses[0]
+            else:
+                logger.warning(
+                    "Streets count more than 1: %(service)s | %(address)s",
+                    {"service": service, "address": address},
+                )
+                addresses = ",".join(addresses)
+
+            start_time = self._prepare_time(date_start, time_start)
+            end_time = self._prepare_time(date_end, time_end)
+            for raw_address in addresses.split(","):
+                raw_address = self._clear_string(raw_address)
+                parsed_address = parse_address(pattern=self.address_pattern, address=raw_address)
+                logger.debug(
+                    "Parsing [%(service)s] Found record: raw: "
+                    "%(raw_address)s | %(street_name)s | %(houses)s | %(start)s | %(end)s",
+                    {
+                        "service": service,
+                        "raw_address": raw_address,
+                        "street_name": parsed_address.street_name,
+                        "houses": parsed_address.houses,
+                        "start": start_time.isoformat() if start_time else "",
+                        "end": end_time.isoformat() if end_time else "",
+                    },
+                )
+                for house in parsed_address.houses:
+                    address_key = Address(
+                        city=self.city,
+                        street_name=parsed_address.street_name,
+                        street_prefix=parsed_address.street_prefix,
+                        house=house,
+                        raw=raw_address,
                     )
-                    logger.debug(
-                        "Parsing [%(service)s] Found record: raw: "
-                        "%(raw_address)s | %(street_name)s | %(houses)s | %(start)s | %(end)s",
-                        {
-                            "service": service,
-                            "raw_address": raw_address,
-                            "street_name": parsed_address.street_name,
-                            "houses": parsed_address.houses,
-                            "start": start_time.isoformat() if start_time else "",
-                            "end": end_time.isoformat() if end_time else "",
-                        },
-                    )
-                    for house in parsed_address.houses:
-                        address_key = Address(
-                            city=self.city,
-                            street_name=parsed_address.street_name,
-                            street_prefix=parsed_address.street_prefix,
-                            house=house,
-                            raw=raw_address,
-                        )
-                        result[address_key].add(DateRange(start_time, end_time))
+                    result[address_key].add(DateRange(start_time, end_time))
 
         pprint.pprint(result, indent=4)
         print("======")

@@ -61,9 +61,7 @@ class UserStorage(BaseStorage):
         """Just requires from abstract base class"""
         pass
 
-    async def update_data(
-        self, key: StorageKey, data: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def update_data(self, key: StorageKey, data: dict[str, Any]) -> dict[str, Any]:
         """
         Update users data (and related items like addresses) for specified key.
         """
@@ -77,7 +75,10 @@ class UserStorage(BaseStorage):
             raise ValueError("Address data not found.")
 
         async with UserRepository() as user_repo:
-            user = await self._get_or_create_user(user_repo, tg_user, key)
+            user = await user_repo.get_or_create(
+                tg_user.id,
+                value={"name": tg_user.full_name, "chat_id": key.chat_id},
+            )
             await user_repo.update_addresses(user, city=city, new_addresses=[address])
 
         return data
