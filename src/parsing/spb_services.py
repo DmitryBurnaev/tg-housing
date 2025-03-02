@@ -69,8 +69,8 @@ class SPBElectricityParser(BaseParser):
                 continue
 
             addresses: list[str] = cast(list, row_streets[0].xpath(".//span/text()"))
-            dates_range: list[_Element] = cast(list, row.xpath("td")[3:7])
-            dates = [td.text for td in dates_range]
+            dates_range: list[_Element] = cast(list, row.xpath("td"))[3:7]
+            dates: list[str | None] = [td.text for td in dates_range]
             date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
             if len(addresses) == 1:

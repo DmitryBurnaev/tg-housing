@@ -106,7 +106,9 @@ class BaseParser(abc.ABC):
         return date.strftime("%d.%m.%Y")
 
     @staticmethod
-    def _clear_string(src_string: str) -> str:
+    def _clear_string(src_string: str | None) -> str:
+        if src_string is None:
+            return "-"
         return src_string.replace("\n", "").strip()
 
     @classmethod
