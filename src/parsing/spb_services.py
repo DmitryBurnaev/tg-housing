@@ -68,23 +68,20 @@ class SPBElectricityParser(BaseParser):
                 logger.debug("No data found for row: %s", row)
                 continue
 
-            addresses: list[str] = cast(list, row_streets[0].xpath(".//span/text()"))
+            raw_addresses: list[str] = cast(list, row_streets[0].xpath(".//span/text()"))
             dates_range: list[_Element] = cast(list, row.xpath("td"))[3:7]
             dates: list[str | None] = [td.text for td in dates_range]
             date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
-            if len(addresses) == 1:
-                addresses = addresses[0]
-            else:
+            if len(raw_addresses) > 1:
                 logger.warning(
-                    "Streets count more than 1: %(service)s | %(address)s",
-                    {"service": service, "address": address},
+                    "Streets count more than 1: %(service)s | %(address)s | %(raw_addresses)s)",
+                    {"service": service, "address": address, "raw_addresses": raw_addresses},
                 )
-                addresses = ",".join(addresses)
 
             start_time = self._prepare_time(date_start, time_start)
             end_time = self._prepare_time(date_end, time_end)
-            for raw_address in addresses.split(","):
+            for raw_address in raw_addresses:
                 raw_address = self._clear_string(raw_address)
                 parsed_address = parse_address(pattern=self.address_pattern, address=raw_address)
                 logger.debug(

@@ -108,7 +108,7 @@ class BaseParser(abc.ABC):
     @staticmethod
     def _clear_string(src_string: str | None) -> str:
         if src_string is None:
-            return "-"
+            return ""
         return src_string.replace("\n", "").strip()
 
     @classmethod

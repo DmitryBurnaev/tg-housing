@@ -58,14 +58,14 @@ class Address(NamedTuple):
 
 
 class DateRange(NamedTuple):
-    start: datetime.datetime
-    end: datetime.datetime
+    start: datetime.datetime | None
+    end: datetime.datetime | None
 
     def __gt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
         if DEBUG_SHUTDOWNS:
             logger.debug("Fake data comparator: %r > %r | always True", self, other)
             return True
-
+        # TODO: fix situation with None start/end
         return self.end.astimezone(datetime.timezone.utc) >= other
 
     def __lt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
