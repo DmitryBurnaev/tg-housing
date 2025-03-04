@@ -58,21 +58,37 @@ class Address(NamedTuple):
 
 
 class DateRange(NamedTuple):
-    start: datetime.datetime | None
-    end: datetime.datetime | None
+    start: datetime.datetime | datetime.date | None
+    end: datetime.datetime | datetime.date | None
 
     def __gt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
         if DEBUG_SHUTDOWNS:
             logger.debug("Fake data comparator: %r > %r | always True", self, other)
             return True
-        # TODO: fix situation with None start/end
+
+        if self.end is None:
+            logger.debug("Fake data comparator: %r > %r | always False", self, other)
+            return False
+
+        if isinstance(self.end, datetime.date):
+            return self.end > other
+
         return self.end.astimezone(datetime.timezone.utc) >= other
 
     def __lt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
+        if self.end is None:
+            logger.debug("Fake data comparator: %r < %r | always True", self, other)
+            return True
+
+        if isinstance(self.end, datetime.date):
+            return self.end < other
+
         return self.end.astimezone(datetime.timezone.utc) < other
 
     def __str__(self) -> str:
-        return f"{self.start.isoformat()} - {self.end.isoformat()}"
+        start = self.start.isoformat() if self.start else None
+        end = self.end.isoformat() if self.end else None
+        return f"{start} - {end}"
 
 
 @dataclasses.dataclass
@@ -83,7 +99,7 @@ class User:
     raw_address: str
     address: Address | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         parsed_address = parse_address(self.raw_address)
         self.address = Address(
             city=self.city,

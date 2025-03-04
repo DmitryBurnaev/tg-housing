@@ -7,17 +7,31 @@ from src.parsing.main_parsing import BaseParser
 
 
 class ShutDownInfo(NamedTuple):
-    start: datetime.datetime
-    end: datetime.datetime
+    start: datetime.datetime | datetime.date | None
+    end: datetime.datetime | datetime.date | None
     raw_address: str
     city: SupportedCity
 
     def __str__(self) -> str:
-        return f"{self.raw_address}: {self._dt_format(self.start)} - {self._dt_format(self.end)}"
+        return f"{self.raw_address}: {self.dt_format(self.start)} - {self.dt_format(self.end)}"
 
-    @staticmethod
-    def _dt_format(dt: datetime.datetime) -> str:
+    @classmethod
+    def dt_format(cls, dt: datetime.datetime | datetime.date | None) -> str:
+        if dt is None:
+            return "-"
+
+        if isinstance(dt, datetime.date):
+            return dt.isoformat()
+
         return dt.strftime("%d.%m.%Y %H:%M")
+
+    @property
+    def start_repr(self) -> str:
+        return self.dt_format(self.start)
+
+    @property
+    def end_repr(self) -> str:
+        return self.dt_format(self.end)
 
 
 class ShutDownByServiceInfo(NamedTuple):

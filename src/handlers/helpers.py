@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -48,7 +50,7 @@ async def fetch_addresses(state: FSMContext) -> Text | str:
     return _("No address yet :(")
 
 
-async def fetch_shutdowns(state: FSMContext) -> list[Text | str]:
+async def fetch_shutdowns(state: FSMContext) -> Sequence[Text | str]:
     if not (addresses := await get_addresses(state)):
         return [_("No address yet :(")]
 
@@ -56,7 +58,7 @@ async def fetch_shutdowns(state: FSMContext) -> list[Text | str]:
     if not shutdowns_by_service:
         return [_("No shutdowns :)")]
 
-    result = []
+    result: list[Text] = []
     for shutdown_by_service in shutdowns_by_service:
         if not shutdown_by_service.shutdowns:
             continue
@@ -67,8 +69,8 @@ async def fetch_shutdowns(state: FSMContext) -> list[Text | str]:
             values.append(
                 as_marked_section(
                     shutdown_info.raw_address,
-                    as_key_value(_("Start"), shutdown_info.start.strftime(DT_FORMAT)),
-                    as_key_value(_("End"), shutdown_info.end.strftime(DT_FORMAT)),
+                    as_key_value(_("Start"), shutdown_info.start_repr),
+                    as_key_value(_("End"), shutdown_info.end_repr),
                     marker="   - ",
                 )
             )

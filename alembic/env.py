@@ -77,7 +77,7 @@ def run_migrations_online() -> None:
             context.run_migrations()
 
 
-def process_revision_directives(context, revision, directives):  # noqa
+def process_revision_directives(context, revision, directives):  # type: ignore # noqa
     # extract Migration
     migration_script = directives[0]
     if migration_script.upgrade_ops.is_empty():

@@ -51,9 +51,7 @@ async def command_address(message: Message, state: FSMContext) -> None:
     )
 
 
-@form_router.message(
-    UserAddressStatesGroup.address, F.text.casefold() == _("Add Address").lower()
-)
+@form_router.message(UserAddressStatesGroup.address, F.text.casefold() == _("Add Address").lower())
 async def add_address_command(message: Message, state: FSMContext) -> None:
     """
     Handle the 'add address' command from the user.
@@ -131,9 +129,7 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         await state.set_state(UserAddressStatesGroup.add_address)
         await answer(
             message,
-            _(
-                'Ups... we can\'t parse address "{message_text} (got {new_address})".'
-            ).format(
+            _('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
                 message_text=message.text,
                 new_address=str(new_address),
             ),
@@ -151,9 +147,7 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _('Ok, I\'ll remember your new address "{new_address}".').format(
-            new_address=new_address
-        ),
+        _('Ok, I\'ll remember your new address "{new_address}".').format(new_address=new_address),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )
@@ -174,10 +168,10 @@ async def remove_address_handler(message: Message, state: FSMContext) -> None:
         None
 
     """
-    new_addresses: filter = filter(
-        lambda address: address != message.text, await get_addresses(state)
-    )
-    await state.update_data({"addresses": list(new_addresses)})
+    new_addresses: list[str] = [
+        address for address in await get_addresses(state) if address != message.text
+    ]
+    await state.update_data({"addresses": new_addresses})
     await state.set_state(state=None)
 
     await answer(
@@ -220,9 +214,7 @@ async def info_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _("Hi, {full_name}!").format(
-            full_name=markdown.bold(message.from_user.full_name)
-        ),
+        _("Hi, {full_name}!").format(full_name=markdown.bold(message.from_user.full_name)),
         await fetch_addresses(state),
         reply_markup=ReplyKeyboardRemove(),
     )

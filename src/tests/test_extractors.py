@@ -44,7 +44,7 @@ from src.utils import parse_address
         ),
     ],
 )
-def test_extract_street_and_house_info(address, expected_result):
+def test_extract_street_and_house_info(address: str, expected_result: dict):
     parsed_address = parse_address(address)
     actual_result = {
         "street_prefix": parsed_address.street_prefix,
