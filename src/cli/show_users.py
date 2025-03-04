@@ -11,7 +11,7 @@ from src.config.app import SupportedCity
 from src.db.repository import UserRepository
 from src.config.logging import LOGGING_CONFIG
 from src.db.session import session_scope
-from src.handlers.helpers import DT_FORMAT, SERVICE_NAME_MAP
+from src.handlers.helpers import SERVICE_NAME_MAP
 from src.providers.shutdowns import ShutDownByServiceInfo, ShutDownProvider
 
 logging.config.dictConfig(LOGGING_CONFIG)
@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 async def find_shutdowns(addresses: list[str]) -> list[Text]:
     """Using fetch_shutdowns find possible shutdowns for user's addresses"""
 
-    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(
-        addresses
-    )
+    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(addresses)
     if not shutdowns_by_service:
         return [Text(_("No shutdowns :)"))]
 
@@ -38,8 +36,8 @@ async def find_shutdowns(addresses: list[str]) -> list[Text]:
             values.append(
                 as_marked_section(
                     shutdown_info.raw_address,
-                    as_key_value(_("Start"), shutdown_info.start.strftime(DT_FORMAT)),
-                    as_key_value(_("End"), shutdown_info.end.strftime(DT_FORMAT)),
+                    as_key_value(_("Start"), shutdown_info.start_repr),
+                    as_key_value(_("End"), shutdown_info.end_repr),
                     marker="   - ",
                 )
             )
@@ -53,7 +51,7 @@ async def show_users(session: AsyncSession) -> None:
     """Fetch and display all users from the database."""
 
     repository = UserRepository(session)
-    users = await repository.get_list(city=SupportedCity.SPB)
+    users = await repository.all(city=SupportedCity.SPB)
     if not users:
         logger.info("No users found in database")
         return

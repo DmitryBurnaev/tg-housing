@@ -3,10 +3,9 @@ import pprint
 from datetime import datetime, date
 from collections import defaultdict
 from functools import wraps
-from typing import NamedTuple, Iterable, cast
+from typing import NamedTuple, Iterable, cast, Callable, Sequence
 
 from lxml import html
-from lxml.etree import _Element
 
 from src.config.app import SupportedService
 from src.parsing.data_models import Address, DateRange
@@ -18,19 +17,21 @@ __all__ = (
     "SPBHotWaterParser",
     "SPBColdWaterParser",
 )
+SeqHTML = Sequence[html.HtmlElement]
 
 
-def set_locale_decorator(func):
+def set_locale_decorator[RT, **P](func: Callable[P, RT]) -> Callable[P, RT]:
     """Temp added ru local for correct parsing date-times"""
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> RT:
         old_locale = locale.getlocale()
         try:
             locale.setlocale(locale.LC_ALL, "ru_RU.UTF-8")
             result = func(*args, **kwargs)
         finally:
             locale.setlocale(locale.LC_ALL, old_locale)
+
         return result
 
     return wrapper
@@ -52,24 +53,22 @@ class SPBElectricityParser(BaseParser):
         """
 
         html_content = self._get_content(service, address)
-        tree: _Element = html.fromstring(html_content)
-        rows: Iterable[_Element] = cast(Iterable, tree.xpath("//table/tbody/tr"))
+        tree: html.HtmlElement = html.fromstring(html_content)
+        rows: SeqHTML = cast(SeqHTML, tree.xpath("//table/tbody/tr"))
         if not rows:
             logger.info("No data found for service: %s", service)
             return {}
 
-        result: defaultdict[Address, set] = defaultdict(set)
+        result: defaultdict[Address, set[str]] = defaultdict(set)
 
         for row in rows:
-            row_streets: list[_Element] = cast(
-                list[_Element], row.xpath(".//td[@class='rowStreets']")
-            )
+            row_streets: SeqHTML = cast(SeqHTML, row.xpath(".//td[@class='rowStreets']"))
             if not row_streets:
                 logger.debug("No data found for row: %s", row)
                 continue
 
             raw_addresses: list[str] = cast(list, row_streets[0].xpath(".//span/text()"))
-            dates_range: list[_Element] = cast(list, row.xpath("td"))[3:7]
+            dates_range: list[html.HtmlElement] = cast(list, row.xpath("td"))[3:7]
             dates: list[str | None] = [td.text for td in dates_range]
             date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
@@ -136,7 +135,7 @@ class SPBHotWaterParser(BaseParser):
     ) -> dict[Address, set[DateRange]]:
         html_content = self._get_content(service, address)
         tree = html.fromstring(html_content)
-        rows = tree.xpath("//table[@class='graph']/tbody/tr")
+        rows: SeqHTML = cast(SeqHTML, tree.xpath("//table[@class='graph']/tbody/tr"))
         if not rows:
             logger.info("No data found for service: %s", service)
             return {}
@@ -145,7 +144,7 @@ class SPBHotWaterParser(BaseParser):
 
         for row in rows:
             if row.xpath(".//td"):
-                row_data = row.xpath(".//td/text()")
+                row_data: list[str] = cast(list, row.xpath(".//td/text()"))
                 try:
                     logger.debug(
                         "Parsing [%(service)s] Found record: row_data: %(row_data)s",
@@ -154,10 +153,10 @@ class SPBHotWaterParser(BaseParser):
                             "row_data": row_data,
                         },
                     )
-                    (_, district, street, house, *liter, period_1, period_2) = row_data
+                    (_, district, street, raw_house, *raw_liters, period_1, period_2) = row_data
                     street = self._clear_string(street)
-                    liter = "".join(liter)
-                    house = int(house)
+                    liter = "".join(raw_liters)
+                    house = int(raw_house)
                 except (IndexError, ValueError) as exc:
                     logger.warning(
                         "Parsing [%(service)s] Found unparsable row: %(row_data)s | error: %(exc)s",
@@ -218,7 +217,7 @@ class SPBHotWaterParser(BaseParser):
 
         return result
 
-    def _prepare_dates(self, period: str) -> tuple[datetime | None, datetime | None]:
+    def _prepare_dates(self, period: str) -> tuple[date | None, date | None]:
         raw_date_1, raw_date_2 = period.split(" - ")
 
         def get_dt(raw_date: str) -> date | None:
@@ -241,9 +240,9 @@ class SPBHotWaterParser(BaseParser):
 
 
 class ColdWaterRecord(NamedTuple):
-    street: str
-    period_start: str
-    period_end: str
+    street: str | None
+    period_start: str | None
+    period_end: str | None
 
 
 class SPBColdWaterParser(BaseParser):
@@ -256,7 +255,7 @@ class SPBColdWaterParser(BaseParser):
     ) -> dict[Address, set[DateRange]]:
         html_content = self._get_content(service, address)
         tree = html.fromstring(html_content)
-        rows = tree.xpath("//div[@class='listplan-item']")
+        rows: list[html.HtmlElement] = cast(list, tree.xpath("//div[@class='listplan-item']"))
         if not rows:
             logger.info("No data found for service: %s", service)
             return {}
@@ -293,6 +292,16 @@ class SPBColdWaterParser(BaseParser):
                     "end": finish_dt.isoformat() if finish_dt else "",
                 },
             )
+            if not row_data.street:
+                logger.debug(
+                    "Parsing [%(service)s] No Street: %(row_data)s",
+                    {
+                        "service": self.service,
+                        "row_data": row_data,
+                    },
+                )
+                continue
+
             if address.street_name in row_data.street:
                 address_key = Address(
                     city=self.city,
@@ -348,9 +357,7 @@ class SPBColdWaterParser(BaseParser):
         shutdown_period_1: str | None = None
         shutdown_period_2: str | None = None
         shutdown_street: str | None = None
-        # print("====")
         for info_tag in info_tags:
-            # print(info_tag.text)
             if "начало" in info_tag.text.lower():
                 shutdown_period_1 = info_tag.tail.strip()
             elif "окончание" in info_tag.text.lower():
