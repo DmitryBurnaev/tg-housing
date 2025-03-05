@@ -2,9 +2,8 @@ import hashlib
 import json
 import logging
 from types import TracebackType
-from typing import Generic, TypeVar, Any, Self, override
+from typing import Generic, TypeVar, Any, Self, TypedDict, Sequence, Unpack
 
-from mypy.build import TypedDict
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -87,12 +86,13 @@ class BaseRepository(Generic[ModelT]):
         """Selects instance by provided ID"""
         statement = select(self.model).filter_by(id=id_)
         result = await self.session.execute(statement)
-        if not (row := result.fetchone()):
+        row: Sequence[tuple[ModelT]] | None = result.fetchone()
+        if not row:
             raise NoResultFound
 
-        return row[0]
+        return row[0][0]
 
-    async def all(self, **filters) -> list[ModelT]:
+    async def all(self, **filters: str | int) -> list[ModelT]:
         """Selects instances from DB"""
 
         statement = select(self.model).filter_by(**filters)
@@ -133,9 +133,9 @@ class UserRepository(BaseRepository[User]):
 
     model = User
 
-    @override
-    async def all(self, city: SupportedCity = SupportedCity.SPB, **filters) -> list[User]:
-        return await super().all(city=city, **filters)
+    async def filter(self, **filters: Unpack[UsersFilter]) -> list[User]:
+        """Extra filtering users by some parameters."""
+        return await self.all(**filters)
 
     async def get_addresses(self, user_id: int) -> list[UserAddress]:
         """

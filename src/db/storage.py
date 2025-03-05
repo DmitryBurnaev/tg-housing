@@ -3,7 +3,6 @@ Storage implementation for managing Telegram bot user data with JSON file persis
 """
 
 import logging
-import dataclasses
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict
 
@@ -16,23 +15,6 @@ from src.db.models import User
 from src.db.repository import UserRepository
 
 logger = logging.getLogger(__name__)
-
-
-@dataclasses.dataclass
-class UserDataRecord:
-    """Data structure for storing user-specific data with serialization capabilities."""
-
-    id: int
-    data: dict[str, Any] = dataclasses.field(default_factory=dict)
-
-    def dump(self) -> dict:
-        """Serialize the user data record to a dictionary."""
-        return dataclasses.asdict(self)
-
-    @classmethod
-    def load(cls, data: dict) -> "UserDataRecord":
-        """Create a UserDataRecord instance from a dictionary."""
-        return cls(**data)
 
 
 class UserStorage(BaseStorage):

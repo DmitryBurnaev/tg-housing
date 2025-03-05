@@ -2,7 +2,6 @@ import argparse
 import logging.config
 import pprint
 import uuid
-from typing import cast
 
 from src.config.app import SupportedCity, SupportedService
 from src.config.logging import LOGGING_CONFIG
@@ -25,7 +24,8 @@ def main() -> None:
         logger.error(f"Unsupported service: {request_service}")
         return
 
-    service: SupportedService = cast(SupportedService, SupportedService[request_service.upper()])
+    # noinspection PyTypeChecker
+    service: SupportedService = SupportedService[request_service.upper()]
     user = User(
         id=uuid.uuid4(),
         name="TestUser",
