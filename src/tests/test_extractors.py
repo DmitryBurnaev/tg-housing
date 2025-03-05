@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 from src.utils import parse_address
@@ -44,7 +46,7 @@ from src.utils import parse_address
         ),
     ],
 )
-def test_extract_street_and_house_info(address: str, expected_result: dict):
+def test_extract_street_and_house_info(address: str, expected_result: dict[str, Any]) -> None:
     parsed_address = parse_address(address)
     actual_result = {
         "street_prefix": parsed_address.street_prefix,

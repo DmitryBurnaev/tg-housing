@@ -3,7 +3,7 @@ from typing import Sequence
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.formatting import as_marked_section, as_key_value, Text, as_list
 
 from src.i18n import _
@@ -11,8 +11,6 @@ from src.config.app import SupportedService
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 DT_FORMAT = "%d.%m.%Y %H:%M"
-
-
 SERVICE_NAME_MAP = {
     SupportedService.ELECTRICITY: _("💡 Electricity"),
     SupportedService.COLD_WATER: _("︎🚰 Cold Water"),
@@ -90,13 +88,19 @@ async def get_addresses(state: FSMContext) -> list[str]:
     return data.get("addresses") or []
 
 
-async def answer(message: Message, title: str, *entities, **kwargs) -> None:
-    content = as_list(
-        title,
-        *entities,
-        sep="\n\n",
-    )
+async def answer(
+    message: Message,
+    title: str,
+    entities: Sequence[str | Text] | None = None,
+    reply_keyboard: bool = False,
+) -> None:
+    """Sends answer with provided message, title and additional entities."""
+    entities = entities or []
+    content = as_list(title, *entities, sep="\n\n")
+    reply_markup = ReplyKeyboardRemove() if reply_keyboard else None
+
     await message.answer(
-        **content.as_kwargs() | {"parse_mode": ParseMode.MARKDOWN},
-        **kwargs,
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=reply_markup,
+        **content.as_kwargs(replace_parse_mode=False),
     )

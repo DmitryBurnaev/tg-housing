@@ -3,7 +3,7 @@ import pprint
 from datetime import datetime, date
 from collections import defaultdict
 from functools import wraps
-from typing import NamedTuple, Iterable, cast, Callable, Sequence
+from typing import NamedTuple, cast, Callable, Sequence
 
 from lxml import html
 
@@ -59,7 +59,7 @@ class SPBElectricityParser(BaseParser):
             logger.info("No data found for service: %s", service)
             return {}
 
-        result: defaultdict[Address, set[str]] = defaultdict(set)
+        result: defaultdict[Address, set[DateRange]] = defaultdict(set)
 
         for row in rows:
             row_streets: SeqHTML = cast(SeqHTML, row.xpath(".//td[@class='rowStreets']"))
@@ -67,8 +67,8 @@ class SPBElectricityParser(BaseParser):
                 logger.debug("No data found for row: %s", row)
                 continue
 
-            raw_addresses: list[str] = cast(list, row_streets[0].xpath(".//span/text()"))
-            dates_range: list[html.HtmlElement] = cast(list, row.xpath("td"))[3:7]
+            raw_addresses: list[str] = cast(list[str], row_streets[0].xpath(".//span/text()"))
+            dates_range: list[html.HtmlElement] = cast(list[str], row.xpath("td"))[3:7]
             dates: list[str | None] = [td.text for td in dates_range]
             date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
@@ -144,7 +144,7 @@ class SPBHotWaterParser(BaseParser):
 
         for row in rows:
             if row.xpath(".//td"):
-                row_data: list[str] = cast(list, row.xpath(".//td/text()"))
+                row_data: list[str] = cast(list[str], row.xpath(".//td/text()"))
                 try:
                     logger.debug(
                         "Parsing [%(service)s] Found record: row_data: %(row_data)s",
@@ -255,7 +255,7 @@ class SPBColdWaterParser(BaseParser):
     ) -> dict[Address, set[DateRange]]:
         html_content = self._get_content(service, address)
         tree = html.fromstring(html_content)
-        rows: list[html.HtmlElement] = cast(list, tree.xpath("//div[@class='listplan-item']"))
+        rows: SeqHTML = cast(SeqHTML, tree.xpath("//div[@class='listplan-item']"))
         if not rows:
             logger.info("No data found for service: %s", service)
             return {}
@@ -325,15 +325,28 @@ class SPBColdWaterParser(BaseParser):
 
     @set_locale_decorator
     def _prepare_dates(
-        self, period_1: str, period_2: str
+        self,
+        period_1: str | None,
+        period_2: str | None,
     ) -> tuple[datetime | None, datetime | None]:
         raw_date_1, raw_date_2 = period_1, period_2
 
-        def get_dt(raw_date: str) -> datetime | None:
+        def get_dt(raw_date: str | None) -> datetime | None:
+            if not raw_date:
+                logger.warning(
+                    "Missing raw_date (None): period_1=%(period_1)s | period_2=%(period_2)s",
+                    {"period_1": period_1, "period_2": period_2},
+                )
+                return None
+
             try:
                 result = datetime.strptime(raw_date.strip(), "%d %B %Y %H:%M")
             except ValueError:
-                logger.warning("Incorrect date / time: date='%s'", raw_date)
+                logger.warning(
+                    "Incorrect date / time '%(raw_date)s': "
+                    "period_1=%(period_1)s | period_2=%(period_2)s",
+                    {"raw_date": raw_date, "period_1": period_1, "period_2": period_2},
+                )
                 return None
 
             return result

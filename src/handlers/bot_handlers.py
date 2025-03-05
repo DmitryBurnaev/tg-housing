@@ -129,11 +129,11 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         await state.set_state(UserAddressStatesGroup.add_address)
         await answer(
             message,
-            _('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
+            title=_('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
                 message_text=message.text,
                 new_address=str(new_address),
             ),
-            reply_markup=ReplyKeyboardRemove(),
+            reply_keyboard=True,
         )
         return
 
@@ -147,9 +147,11 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _('Ok, I\'ll remember your new address "{new_address}".').format(new_address=new_address),
-        await fetch_addresses(state),
-        reply_markup=ReplyKeyboardRemove(),
+        title=_('Ok, I\'ll remember your new address "{new_address}".').format(
+            new_address=new_address
+        ),
+        entities=[await fetch_addresses(state)],
+        reply_keyboard=True,
     )
 
 
@@ -176,9 +178,9 @@ async def remove_address_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _('OK. Address "{message.text}" was removed!').format(message=message),
-        await fetch_addresses(state),
-        reply_markup=ReplyKeyboardRemove(),
+        title=_('OK. Address "{message.text}" was removed!').format(message=message),
+        entities=[await fetch_addresses(state)],
+        reply_keyboard=True,
     )
 
 
@@ -214,9 +216,9 @@ async def info_handler(message: Message, state: FSMContext) -> None:
 
     await answer(
         message,
-        _("Hi, {full_name}!").format(full_name=markdown.bold(message.from_user.full_name)),
-        await fetch_addresses(state),
-        reply_markup=ReplyKeyboardRemove(),
+        title=_("Hi, {full_name}!").format(full_name=markdown.bold(message.from_user.full_name)),
+        entities=[await fetch_addresses(state)],
+        reply_keyboard=True,
     )
 
 
@@ -241,10 +243,10 @@ async def clear_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
     await answer(
         message,
-        _("Ok, I forgot all for you, {full_name}!").format(
+        title=_("Ok, I forgot all for you, {full_name}!").format(
             full_name=markdown.bold(message.from_user.full_name)
         ),
-        reply_markup=ReplyKeyboardRemove(),
+        reply_keyboard=True,
     )
 
 
@@ -263,4 +265,4 @@ async def shutdowns_handler(message: Message, state: FSMContext) -> None:
     """
     addresses = await fetch_addresses(state)
     shutdowns = await fetch_shutdowns(state)
-    await answer(message, _("Ok, That's your information:"), addresses, *shutdowns)
+    await answer(message, title=_("Ok, That's your information:"), entities=[addresses, *shutdowns])
