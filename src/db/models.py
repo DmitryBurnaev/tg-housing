@@ -1,7 +1,9 @@
 from datetime import datetime
 
+from aiogram.fsm.storage.base import StorageKey
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy import String
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -10,7 +12,7 @@ from sqlalchemy.orm import relationship
 from src.utils import utcnow
 
 
-class BaseModel(DeclarativeBase):
+class BaseModel(AsyncAttrs, DeclarativeBase):
     id: Mapped[int]
 
 
@@ -37,6 +39,9 @@ class User(BaseModel):
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, name={self.name!r})"
 
+    async def get_addresses(self) -> list["UserAddress"]:
+        return [address for address in (await self.awaitable_attrs.addresses)]
+
 
 class UserAddress(BaseModel):
     """User address model representing a Telegram user in the system."""
@@ -52,6 +57,7 @@ class UserAddress(BaseModel):
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="addresses")
+    notifications: Mapped[list["UserNotification"]] = relationship(back_populates="address")
 
     def __repr__(self) -> str:
         return (

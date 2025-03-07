@@ -1,12 +1,14 @@
 import hashlib
 import json
 import logging
+from functools import wraps
 from types import TracebackType
 from typing import Generic, TypeVar, Any, Self, TypedDict, Sequence, Unpack
 
 from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.util import await_fallback
 
 from src.config.app import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
@@ -14,6 +16,19 @@ from src.db.session import make_sa_session
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 logger = logging.getLogger(__name__)
+
+
+def rollback_wrapper(func):
+    @wraps(func)
+    async def inner(self, *args, **kwargs):
+        try:
+            return await func(self, *args, **kwargs)
+        except SQLAlchemyError as exc:
+            await self.session.rollback()
+            logger.error(f"Error during DB operation: {exc}")
+            raise exc
+
+    return inner
 
 
 class UsersFilter(TypedDict):
@@ -55,10 +70,20 @@ class BaseRepository(Generic[ModelT]):
         await self.__session.close()
         self.__session = None
 
+    async def close(self) -> None:
+        """Closing current session"""
+        if self.__session:
+            logger.debug("Closing session")
+            await self.__session.close()
+            self.__session = None
+        else:
+            logger.debug("Session already closed")
+
     @property
     def session(self) -> AsyncSession:
+        """Provide current session (open if it isn't created yet)"""
         if not self.__session:
-            raise RuntimeError("Session not open")
+            self.__session = make_sa_session()
 
         return self.__session
 
@@ -82,15 +107,24 @@ class BaseRepository(Generic[ModelT]):
             await self.session.rollback()
             raise exc
 
-    async def get(self, id_: int) -> ModelT:
+    async def get(self, instance_id: int) -> ModelT:
         """Selects instance by provided ID"""
-        statement = select(self.model).filter_by(id=id_)
-        result = await self.session.execute(statement)
-        row: Sequence[tuple[ModelT]] | None = result.fetchone()
-        if not row:
+        instance: ModelT | None = await self.first(instance_id)
+        if not instance:
             raise NoResultFound
 
-        return row[0][0]
+        return instance
+
+    async def first(self, instance_id: int) -> ModelT | None:
+        """Selects instance by provided ID"""
+        async with self.session.begin_nested() as session:
+            statement = select(self.model).filter_by(id=instance_id)
+            result = await self.session.execute(statement)
+            row: Sequence[tuple[ModelT]] | None = result.fetchone()
+            if not row:
+                return None
+
+            return row[0]
 
     async def all(self, **filters: str | int) -> list[ModelT]:
         """Selects instances from DB"""
@@ -99,21 +133,27 @@ class BaseRepository(Generic[ModelT]):
         result = await self.session.execute(statement)
         return [row[0] for row in result.fetchall()]
 
+    @rollback_wrapper
     async def create(self, value: dict[str, Any]) -> ModelT:
         """Creates new instance"""
-        instance = self.model(**value)
-        self.session.add(instance)
-        await self.flush_and_commit()
+        logger.debug(f"[DB] Creating [%s]: %s", self.model.__name__, value)
+        async with self.session.begin_nested():
+            instance = self.model(**value)
+            self.session.add(instance)
+            await self.flush_and_commit()
+
         return instance
 
+    @rollback_wrapper
     async def get_or_create(self, id_: int, value: dict[str, Any]) -> ModelT:
         """Tries to find instance by ID and create if it wasn't found"""
-        instance = await self.get(id_)
+        instance = await self.first(id_)
         if not instance:
             instance = await self.create(value | {"id": id_})
 
         return instance
 
+    @rollback_wrapper
     async def update(self, instance: ModelT, **value: dict[str, Any]) -> None:
         """Just updates instance with provided update_value."""
         for key, value in value.items():
@@ -122,6 +162,7 @@ class BaseRepository(Generic[ModelT]):
         self.session.add(instance)
         await self.flush_and_commit()
 
+    @rollback_wrapper
     async def delete(self, instance: ModelT) -> None:
         """Remove the instance from the DB."""
         await self.session.delete(instance)
@@ -142,12 +183,13 @@ class UserRepository(BaseRepository[User]):
         Returns list of user's addresses
         """
         user: User = await self.get(user_id)
-        return user.addresses
+        return await user.get_addresses()
 
     async def get_addresses_list(self, user_id: int) -> list[str]:
         """Returns list of user's addresses"""
         user: User = await self.get(user_id)
-        return [user_address.address for user_address in user.addresses]
+        addresses = await user.get_addresses()
+        return [user_address.address for user_address in addresses]
 
     async def update_addresses(
         self, user: User, city: SupportedCity, new_addresses: list[str]
@@ -155,7 +197,7 @@ class UserRepository(BaseRepository[User]):
         """Finds missing addresses and insert this ones"""
         user_addresses = await self.get_addresses(user.id)
         plain_addresses = set(user_address.address for user_address in user_addresses)
-        missing_addresses = plain_addresses - set(new_addresses)
+        missing_addresses = plain_addresses - {str(addr) for addr in new_addresses}
         for address in missing_addresses:
             await self.add_address(user, city=city, address=address)
 
@@ -181,9 +223,6 @@ class UserRepository(BaseRepository[User]):
     async def get_notifications(self, user_id: int) -> list[UserNotification]:
         """Returns list of user's notifications"""
         user = await self.get(user_id)
-        if not user:
-            return []
-
         return user.notifications
 
     async def has_notification(
