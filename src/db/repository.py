@@ -3,7 +3,7 @@ import json
 import logging
 from functools import wraps
 from types import TracebackType
-from typing import Generic, TypeVar, Any, Self, TypedDict, Sequence, Unpack
+from typing import Generic, TypeVar, Any, Self, TypedDict, Sequence, Unpack, Callable, Awaitable
 
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
@@ -16,6 +16,33 @@ from src.db.session import make_sa_session
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 logger = logging.getLogger(__name__)
+
+
+def transaction_commit[RT, **P](func: Callable[P, Awaitable[RT]]) -> Callable[P, Awaitable[RT]]:
+    """Commits changes to the DB and rollback if something went wrong."""
+
+    @wraps(func)
+    async def wrapper(self: "BaseRepository[ModelT]", *args: P.args, **kwargs: P.kwargs) -> RT:
+        func_details: str = f"[{self.model.__name__}]: {func.__name__}({args}, {kwargs})"
+        try:
+            logger.debug("[DB] Entering transaction block %s", func_details)
+
+            result = await func(self, *args, **kwargs)
+            if self.auto_flush:
+                await self.session.flush()
+
+            async with self.session.begin():
+                logger.debug("[DB] Commiting %s", func_details)
+                await self.session.commit()
+
+            return result
+
+        except SQLAlchemyError as exc:
+            await self.session.rollback()
+            logger.error("[DB] Error during operation %s: %r", func_details, exc)
+            raise exc
+
+    return wrapper
 
 
 def rollback_wrapper(func):
