@@ -1,12 +1,11 @@
-import locale
 import pprint
 from datetime import datetime, date
 from collections import defaultdict
-from functools import wraps
-from typing import NamedTuple, cast, Callable, Sequence
+from typing import NamedTuple, cast, Sequence
 
 from lxml import html
 
+from src.decorators import set_locale_decorator
 from src.config.app import SupportedService
 from src.parsing.data_models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
@@ -18,23 +17,6 @@ __all__ = (
     "SPBColdWaterParser",
 )
 SeqHTML = Sequence[html.HtmlElement]
-
-
-def set_locale_decorator[RT, **P](func: Callable[P, RT]) -> Callable[P, RT]:
-    """Temp added ru local for correct parsing date-times"""
-
-    @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> RT:
-        old_locale = locale.getlocale()
-        try:
-            locale.setlocale(locale.LC_ALL, "ru_RU.UTF-8")
-            result = func(*args, **kwargs)
-        finally:
-            locale.setlocale(locale.LC_ALL, old_locale)
-
-        return result
-
-    return wrapper
 
 
 class SPBElectricityParser(BaseParser):

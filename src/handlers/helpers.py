@@ -84,6 +84,7 @@ async def fetch_shutdowns(state: FSMContext) -> Sequence[Text | str]:
 
 
 async def get_addresses(state: FSMContext) -> list[str]:
+    """Extract addresses from DB, related for current user (detected by user's ID in the state)"""
     data = await state.get_data()
     return data.get("addresses") or []
 

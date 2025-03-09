@@ -20,9 +20,6 @@ class ShutDownInfo(NamedTuple):
         if dt is None:
             return "-"
 
-        if isinstance(dt, datetime.date):
-            return dt.isoformat()
-
         return dt.strftime("%d.%m.%Y %H:%M")
 
     @property
@@ -40,6 +37,8 @@ class ShutDownByServiceInfo(NamedTuple):
 
 
 class ShutDownProvider:
+    """Collects info, given from parsers by specific address"""
+
     @classmethod
     def for_address(
         cls, city: SupportedCity, address: str, service: SupportedService
@@ -80,7 +79,6 @@ class ShutDownProvider:
 
         """
         shutdown_info_list = []
-        # # for (service, parser_cls) in BaseParser.get_parsers().items():
         for service in SupportedService.members():
             for address in addresses:
                 if shutdowns := cls.for_address(SupportedCity.SPB, address, service):

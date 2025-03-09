@@ -3,7 +3,7 @@ import hashlib
 import logging
 import urllib.parse
 from datetime import date, datetime, timedelta, timezone
-from typing import ClassVar
+from typing import ClassVar, Pattern
 
 import httpx
 
@@ -13,26 +13,33 @@ from src.config.app import (
     SSL_REQUEST_VERIFY,
     SupportedCity,
     SupportedService,
+    PARSE_DAYS_BEFORE,
+    PARSE_DAYS_AFTER,
 )
 from src.parsing.data_models import Address, DateRange
-from src.utils import ADDRESS_DEFAULT_PATTERN
+from src.utils import ADDRESS_DEFAULT_PATTERN, utcnow
 
 logger = logging.getLogger("parsing.main")
 
 
 class BaseParser(abc.ABC):
-    date_format = "%d.%m.%Y"
-    address_pattern = ADDRESS_DEFAULT_PATTERN
-    max_days_filter = 90
+    """
+    Base class for all parsers. Provides logic for fetching and parse specific
+    (overrides by child class)
+    """
+
+    date_format: ClassVar[str] = "%d.%m.%Y"
+    address_pattern: ClassVar[Pattern[str]] = ADDRESS_DEFAULT_PATTERN
+    days_before: ClassVar[int] = PARSE_DAYS_BEFORE
+    days_after: ClassVar[int] = PARSE_DAYS_AFTER
     service: ClassVar[SupportedService] = NotImplemented
-    verbose: bool = False
 
     def __init__(self, city: SupportedCity, verbose: bool = False) -> None:
         self.urls = RESOURCE_URLS[city]
         self.city = city
-        self.date_start = datetime.now().date()
-        self.finish_time_filter = self.date_start + timedelta(days=self.max_days_filter)
-        self.verbose = verbose
+        self.date_start = utcnow().date() - timedelta(days=self.days_before)
+        self.finish_time_filter = self.date_start + timedelta(days=self.days_after)
+        self.verbose: bool = verbose
 
     def parse(self, user_address: Address) -> dict[Address, set[DateRange]]:
         """

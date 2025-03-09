@@ -20,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.decorators import decohints
 from src.config.app import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
 from src.db.session import make_sa_session
@@ -28,13 +29,6 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 logger = logging.getLogger(__name__)
 P = ParamSpec("P")
 RT = TypeVar("RT")
-
-
-def decohints(decorator: Callable[..., Any]) -> Callable[..., Any]:
-    """
-    Small helper which helps to say IDE: "decorated method has the same params and return types"
-    """
-    return decorator
 
 
 @decohints
@@ -55,7 +49,7 @@ def transaction_commit(func: Callable[P, Awaitable[RT]]) -> Callable[P, Awaitabl
             if self.auto_flush:
                 await self.session.flush()
 
-            async with self.session.begin():
+            async with self.session.begin_nested():
                 logger.debug("[DB] Commiting %s", func_details)
                 await self.session.commit()
 
@@ -173,7 +167,7 @@ class BaseRepository(Generic[ModelT]):
     @transaction_commit
     async def create(self, value: dict[str, Any]) -> ModelT:
         """Creates new instance"""
-        logger.debug(f"[DB] Creating [%s]: %s", self.model.__name__, value)
+        logger.debug("[DB] Creating [%s]: %s", self.model.__name__, value)
         instance = self.model(**value)
         self.session.add(instance)
         return instance
@@ -228,10 +222,18 @@ class UserRepository(BaseRepository[User]):
     ) -> None:
         """Finds missing addresses and insert this ones"""
         user_addresses = await self.get_addresses(user.id)
-        plain_addresses = set(user_address.address for user_address in user_addresses)
-        missing_addresses = plain_addresses - {str(addr) for addr in new_addresses}
-        for address in missing_addresses:
-            await self.add_address(user, city=city, address=address)
+        stored_addresses = set(user_address.address for user_address in user_addresses)
+        missing_addresses = {str(addr) for addr in new_addresses} - stored_addresses
+        if missing_addresses:
+            logger.debug(
+                "[DB] Updating addresses for user [%s]: added new addresses: %s",
+                user.id,
+                missing_addresses,
+            )
+            for address in missing_addresses:
+                await self.add_address(user, city=city, address=address)
+        else:
+            logger.debug("[DB] No new addresses updated for user [%s]", user.id)
 
     async def add_address(self, user: User, city: SupportedCity, address: str) -> UserAddress:
         """
