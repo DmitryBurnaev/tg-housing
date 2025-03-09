@@ -5,7 +5,6 @@ and provides a structured way for users to interact with address-related command
 """
 
 import logging
-import os
 
 from aiogram import F, Router
 from aiogram.utils import markdown
@@ -32,12 +31,11 @@ from src.utils import parse_address, ParsedAddress
 form_router = Router()
 
 
-# @form_router.message(Command("address"))
-async def ___command_address(message: Message, state: FSMContext) -> None:
+@form_router.message(Command("address"))
+async def command_address(message: Message, state: FSMContext) -> None:
     """
     Transition to state "set_address"
     """
-
     await state.set_state(UserAddressStatesGroup.address)
     await message.answer(
         _("What do you want?"),
@@ -51,52 +49,6 @@ async def ___command_address(message: Message, state: FSMContext) -> None:
             resize_keyboard=True,
         ),
     )
-
-
-@form_router.message(Command("address"))
-async def command_address(message: Message, state: FSMContext) -> None:
-    """
-    Transition to state "set_address"
-    """
-
-    new_address: ParsedAddress = parse_address(os.getenv("HARDCODED_ADDRESS", "test"))
-    if not new_address.completed:
-        await state.set_state(UserAddressStatesGroup.add_address)
-        await answer(
-            message,
-            title=_('Ups... we can\'t parse address "{message_text} (got {new_address})".').format(
-                message_text=message.text,
-                new_address=str(new_address),
-            ),
-            reply_keyboard=True,
-        )
-        return
-
-    await state.update_data(user=message.from_user, city=SupportedCity.SPB, address=new_address)
-    await state.set_state(state=None)
-
-    await answer(
-        message,
-        title=_('Ok, I\'ll remember your new address "{new_address}".').format(
-            new_address=new_address
-        ),
-        entities=[await fetch_addresses(state)],
-        reply_keyboard=True,
-    )
-    #
-    # await state.set_state(UserAddressStatesGroup.address)
-    # await message.answer(
-    #     _("What do you want?"),
-    #     reply_markup=ReplyKeyboardMarkup(
-    #         keyboard=[
-    #             [
-    #                 KeyboardButton(text=_("Add Address")),
-    #                 KeyboardButton(text=_("Remove Address")),
-    #             ]
-    #         ],
-    #         resize_keyboard=True,
-    #     ),
-    # )
 
 
 @form_router.message(UserAddressStatesGroup.address, F.text.casefold() == _("Add Address").lower())

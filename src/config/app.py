@@ -65,7 +65,9 @@ TG_TEST_CHAT_IDS = os.getenv("TG_TEST_CHAT_IDS", "").split(",")
 
 TMP_DATA_DIR = PROJECT_PATH.parent / ".data"
 
-DEBUG_SHUTDOWNS = os.getenv("DEBUG_SHUTDOWNS", "false").lower() == "true"
+DEBUG_SHUTDOWNS: bool = os.getenv("PARSE_DEBUG_SHUTDOWNS", "false").lower() == "true"
+PARSE_DAYS_BEFORE: int = int(os.getenv("PARSE_DAYS_BEFORE", "1"))
+PARSE_DAYS_AFTER: int = int(os.getenv("PARSE_DAYS_AFTER", "90"))
 
 SSL_REQUEST_VERIFY = os.getenv("SSL_REQUEST_VERIFY", "true").lower() == "true"
 

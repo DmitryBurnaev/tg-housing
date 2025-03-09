@@ -47,7 +47,9 @@ class UserStorage(BaseStorage):
         if user is None:
             return {}
 
-        addresses: list[str] = [address.raw for address in (await user.awaitable_attrs.addresses)]
+        addresses: list[str] = [
+            user_address.address for user_address in (await user.awaitable_attrs.addresses)
+        ]
         return {
             "id": user.id,
             "chat_id": user.chat_id,

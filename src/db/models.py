@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from aiogram.fsm.storage.base import StorageKey
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncAttrs
