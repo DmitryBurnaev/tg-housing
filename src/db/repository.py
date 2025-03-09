@@ -3,12 +3,22 @@ import json
 import logging
 from functools import wraps
 from types import TracebackType
-from typing import Generic, TypeVar, Any, Self, TypedDict, Sequence, Unpack, Callable, Awaitable
+from typing import (
+    Generic,
+    TypeVar,
+    Any,
+    Self,
+    TypedDict,
+    Sequence,
+    Unpack,
+    Callable,
+    Awaitable,
+    ParamSpec,
+)
 
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.util import await_fallback
 
 from src.config.app import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
@@ -16,18 +26,32 @@ from src.db.session import make_sa_session
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 logger = logging.getLogger(__name__)
+P = ParamSpec("P")
+RT = TypeVar("RT")
 
 
-def transaction_commit[RT, **P](func: Callable[P, Awaitable[RT]]) -> Callable[P, Awaitable[RT]]:
+def decohints(decorator: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    Small helper which helps to say IDE: "decorated method has the same params and return types"
+    """
+    return decorator
+
+
+@decohints
+def transaction_commit(func: Callable[P, Awaitable[RT]]) -> Callable[P, Awaitable[RT]]:
     """Commits changes to the DB and rollback if something went wrong."""
 
     @wraps(func)
-    async def wrapper(self: "BaseRepository[ModelT]", *args: P.args, **kwargs: P.kwargs) -> RT:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> RT:
+        self = args[0]
+        if not isinstance(self, BaseRepository):
+            raise TypeError("First argument must be BaseRepository instance")
+
         func_details: str = f"[{self.model.__name__}]: {func.__name__}({args}, {kwargs})"
         try:
             logger.debug("[DB] Entering transaction block %s", func_details)
 
-            result = await func(self, *args, **kwargs)
+            result = await func(*args, **kwargs)
             if self.auto_flush:
                 await self.session.flush()
 
@@ -43,19 +67,6 @@ def transaction_commit[RT, **P](func: Callable[P, Awaitable[RT]]) -> Callable[P,
             raise exc
 
     return wrapper
-
-
-def rollback_wrapper(func):
-    @wraps(func)
-    async def inner(self, *args, **kwargs):
-        try:
-            return await func(self, *args, **kwargs)
-        except SQLAlchemyError as exc:
-            await self.session.rollback()
-            logger.error(f"Error during DB operation: {exc}")
-            raise exc
-
-    return inner
 
 
 class UsersFilter(TypedDict):
@@ -144,14 +155,13 @@ class BaseRepository(Generic[ModelT]):
 
     async def first(self, instance_id: int) -> ModelT | None:
         """Selects instance by provided ID"""
-        async with self.session.begin_nested() as session:
-            statement = select(self.model).filter_by(id=instance_id)
-            result = await self.session.execute(statement)
-            row: Sequence[tuple[ModelT]] | None = result.fetchone()
-            if not row:
-                return None
+        statement = select(self.model).filter_by(id=instance_id)
+        result = await self.session.execute(statement)
+        row: Sequence[ModelT] | None = result.fetchone()
+        if not row:
+            return None
 
-            return row[0]
+        return row[0]
 
     async def all(self, **filters: str | int) -> list[ModelT]:
         """Selects instances from DB"""
@@ -160,40 +170,34 @@ class BaseRepository(Generic[ModelT]):
         result = await self.session.execute(statement)
         return [row[0] for row in result.fetchall()]
 
-    @rollback_wrapper
+    @transaction_commit
     async def create(self, value: dict[str, Any]) -> ModelT:
         """Creates new instance"""
         logger.debug(f"[DB] Creating [%s]: %s", self.model.__name__, value)
-        async with self.session.begin_nested():
-            instance = self.model(**value)
-            self.session.add(instance)
-            await self.flush_and_commit()
-
+        instance = self.model(**value)
+        self.session.add(instance)
         return instance
 
-    @rollback_wrapper
     async def get_or_create(self, id_: int, value: dict[str, Any]) -> ModelT:
         """Tries to find instance by ID and create if it wasn't found"""
         instance = await self.first(id_)
-        if not instance:
+        if instance is None:
             instance = await self.create(value | {"id": id_})
 
         return instance
 
-    @rollback_wrapper
+    @transaction_commit
     async def update(self, instance: ModelT, **value: dict[str, Any]) -> None:
         """Just updates instance with provided update_value."""
         for key, value in value.items():
             setattr(instance, key, value)
 
         self.session.add(instance)
-        await self.flush_and_commit()
 
-    @rollback_wrapper
+    @transaction_commit
     async def delete(self, instance: ModelT) -> None:
         """Remove the instance from the DB."""
         await self.session.delete(instance)
-        await self.flush_and_commit()
 
 
 class UserRepository(BaseRepository[User]):
@@ -218,6 +222,7 @@ class UserRepository(BaseRepository[User]):
         addresses = await user.get_addresses()
         return [user_address.address for user_address in addresses]
 
+    @transaction_commit
     async def update_addresses(
         self, user: User, city: SupportedCity, new_addresses: list[str]
     ) -> None:
