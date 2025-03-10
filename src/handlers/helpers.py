@@ -62,6 +62,7 @@ async def fetch_shutdowns(state: FSMContext) -> Sequence[Text | str]:
             continue
 
         title = SERVICE_NAME_MAP[shutdown_by_service.service]
+        print(title, shutdown_by_service.service, shutdowns_by_service)
         values = []
         for shutdown_info in shutdown_by_service.shutdowns:
             values.append(

@@ -239,21 +239,20 @@ class SPBColdWaterParser(BaseParser):
         tree = html.fromstring(html_content)
         rows: SeqHTML = cast(SeqHTML, tree.xpath("//div[@class='listplan-item']"))
         if not rows:
-            logger.info("No data found for service: %s", service)
+            logger.info("Parsing [%(service)s] No data found for service", service)
             return {}
 
         result = defaultdict(set)
 
         for row in rows:
             if not (row_data := self._extract_info_tags(row)):
-                if self.verbose:
-                    logger.debug(
-                        "Parsing [%(service)s] Found unparsable row: %(row_data)s",
-                        {
-                            "service": self.service,
-                            "row_data": row.text_content().replace("\n", " | "),
-                        },
-                    )
+                logger.debug(
+                    "Parsing [%(service)s] Found unparsable row: %(row_data)s",
+                    {
+                        "service": self.service,
+                        "row_data": row.text_content().replace("\n", " | "),
+                    },
+                )
                 continue
 
             logger.debug(
@@ -284,7 +283,7 @@ class SPBColdWaterParser(BaseParser):
                 )
                 continue
 
-            if address.street_name in row_data.street:
+            if address.street_name.lower() in row_data.street.lower():
                 address_key = Address(
                     city=self.city,
                     raw=row_data.street,
@@ -341,7 +340,7 @@ class SPBColdWaterParser(BaseParser):
     def _extract_info_tags(row: html.HtmlElement) -> ColdWaterRecord | None:
         if not (info_tags := row.xpath(".//div//strong")):
             logger.debug(
-                "Parsing [%(service)s] Found unparsable row: %(row)s",
+                "Parsing [%(service)s] No info tags: %(row)s",
                 {
                     "service": SupportedService.COLD_WATER,
                     "row": row.text_content(),
@@ -353,11 +352,12 @@ class SPBColdWaterParser(BaseParser):
         shutdown_period_2: str | None = None
         shutdown_street: str | None = None
         for info_tag in info_tags:
+            info_text: str = info_tag.text.lower()
             if "начало" in info_tag.text.lower():
                 shutdown_period_1 = info_tag.tail.strip()
             elif "окончание" in info_tag.text.lower():
                 shutdown_period_2 = info_tag.tail.strip()
-            elif "адреса отключаемых объектов" in info_tag.text.lower():
+            elif "адрес" in info_text:
                 shutdown_street = info_tag.tail.strip()
 
             if all([shutdown_period_1, shutdown_period_2, shutdown_street]):
