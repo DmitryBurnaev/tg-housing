@@ -80,6 +80,7 @@ class ShutDownProvider:
         """
         shutdown_info_list = []
         for service in SupportedService.members():
+            print(f"{service=}")
             for address in addresses:
                 if shutdowns := cls.for_address(SupportedCity.SPB, address, service):
                     shutdown_info_list.append(
