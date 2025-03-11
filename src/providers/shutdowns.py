@@ -20,7 +20,10 @@ class ShutDownInfo(NamedTuple):
         if dt is None:
             return "-"
 
-        return dt.strftime("%d.%m.%Y %H:%M")
+        if isinstance(dt, datetime.datetime):
+            return dt.strftime("%d.%m.%Y %H:%M")
+
+        return dt.strftime("%d.%m.%Y")
 
     @property
     def start_repr(self) -> str:

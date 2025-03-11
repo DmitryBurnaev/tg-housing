@@ -206,8 +206,8 @@ class SPBHotWaterParser(BaseParser):
             raw_date = self._clear_string(raw_date)
             try:
                 result = datetime.strptime(raw_date, "%d.%m.%Y").date()
-            except ValueError:
-                logger.warning("Incorrect date / time: date='%s'", raw_date)
+            except ValueError as exc:
+                logger.warning("Incorrect date / time: date='%s' (%s)", raw_date, exc)
                 return None
 
             return result
@@ -309,10 +309,10 @@ class SPBColdWaterParser(BaseParser):
         self,
         period_1: str | None,
         period_2: str | None,
-    ) -> tuple[datetime | None, datetime | None]:
+    ) -> tuple[datetime | date | None, datetime | date | None]:
         raw_date_1, raw_date_2 = period_1, period_2
 
-        def get_dt(raw_date: str | None) -> datetime | None:
+        def get_dt(raw_date: str | None) -> datetime | date | None:
             if not raw_date:
                 logger.warning(
                     "Missing raw_date (None): period_1=%(period_1)s | period_2=%(period_2)s",
@@ -321,16 +321,24 @@ class SPBColdWaterParser(BaseParser):
                 return None
 
             try:
-                result = datetime.strptime(raw_date.strip(), "%d %B %Y %H:%M")
+                return datetime.strptime(raw_date.strip(), "%d %B %Y %H:%M")
             except ValueError:
-                logger.warning(
-                    "Incorrect date / time '%(raw_date)s': "
-                    "period_1=%(period_1)s | period_2=%(period_2)s",
-                    {"raw_date": raw_date, "period_1": period_1, "period_2": period_2},
-                )
-                return None
+                try:
+                    return datetime.strptime(raw_date.strip(), "%d %B %Y").date()
+                except Exception as exc:
+                    logger.error(
+                        "Parsing [COLD_WATER] Unable to get date / time '%(raw_date)s' "
+                        "period_1 = '%(period_1)s' | period_2 = '%(period_2)s' (error: %(exc)s)",
+                        {
+                            "service": self.service,
+                            "raw_date": raw_date,
+                            "period_1": period_1,
+                            "period_2": period_2,
+                            "exc": exc,
+                        },
+                    )
 
-            return result
+            return None
 
         start_dt = get_dt(raw_date_1)
         finish_dt = get_dt(raw_date_2)
