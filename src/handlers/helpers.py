@@ -11,6 +11,7 @@ from src.config.app import SupportedService
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 DT_FORMAT = "%d.%m.%Y %H:%M"
+D_FORMAT = "%d.%m.%Y"
 SERVICE_NAME_MAP = {
     SupportedService.ELECTRICITY: _("💡 Electricity"),
     SupportedService.COLD_WATER: _("︎🚰 Cold Water"),

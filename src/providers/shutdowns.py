@@ -1,6 +1,7 @@
 import datetime
 from typing import NamedTuple, Type
 
+from src.handlers.helpers import DT_FORMAT, D_FORMAT
 from src.config.app import SupportedService, SupportedCity
 from src.parsing.data_models import Address
 from src.parsing.main_parsing import BaseParser
@@ -17,13 +18,15 @@ class ShutDownInfo(NamedTuple):
 
     @classmethod
     def dt_format(cls, dt: datetime.datetime | datetime.date | None) -> str:
+        """String representation of datetime.datetime or datetime.date (showed in TG's message)"""
+
         if dt is None:
             return "-"
 
         if isinstance(dt, datetime.datetime):
-            return dt.strftime("%d.%m.%Y %H:%M")
+            return dt.strftime(DT_FORMAT)
 
-        return dt.strftime("%d.%m.%Y")
+        return dt.strftime(D_FORMAT)
 
     @property
     def start_repr(self) -> str:
