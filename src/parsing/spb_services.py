@@ -119,7 +119,9 @@ class SPBHotWaterParser(BaseParser):
         tree = html.fromstring(html_content)
         rows: SeqHTML = cast(SeqHTML, tree.xpath("//table[@class='graph']/tbody/tr"))
         if not rows:
-            logger.info("No data found for service: %s", service)
+            logger.info(
+                "Parsing [%(service)s] No information rows found ", {"service": self.service}
+            )
             return {}
 
         result = defaultdict(set)
