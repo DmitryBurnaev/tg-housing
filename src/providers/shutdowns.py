@@ -1,8 +1,7 @@
 import datetime
 from typing import NamedTuple, Type
 
-from src.handlers.helpers import DT_FORMAT, D_FORMAT
-from src.config.app import SupportedService, SupportedCity
+from src.config.app import SupportedService, SupportedCity, DT_FORMAT, D_FORMAT
 from src.parsing.data_models import Address
 from src.parsing.main_parsing import BaseParser
 

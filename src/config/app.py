@@ -48,7 +48,8 @@ RESOURCE_URLS = {
             "city={city}&date_start={date_start}&date_finish={date_finish}&street={street_name}"
         ),
         SupportedService.HOT_WATER: (
-            "https://www.gptek.spb.ru/grafik/?street={street_name}+{street_prefix}&house={house}"
+            # "https://www.gptek.spb.ru/grafik/?street={street_name}+{street_prefix}&house={house}"
+            "https://aotek.spb.ru/grafik/?street={street_name}+{street_prefix}&house={house}"
         ),
         SupportedService.COLD_WATER: "https://www.vodokanal.spb.ru/presscentr/remontnye_raboty/",
     }
@@ -73,6 +74,8 @@ SSL_REQUEST_VERIFY = os.getenv("SSL_REQUEST_VERIFY", "true").lower() == "true"
 
 LOCALE = os.getenv("LOCALE", "ru-RU").lower()
 I18N_FALLBACK = os.getenv("I18N_FALLBACK", "false").lower() == "false"
+DT_FORMAT = "%d.%m.%Y %H:%M"
+D_FORMAT = "%d.%m.%Y"
 
 # SQLite database URL for async connection
 DATABASE_URL = f"sqlite:///{DATA_PATH}/database.db"
