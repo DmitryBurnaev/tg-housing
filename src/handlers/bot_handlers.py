@@ -263,6 +263,16 @@ async def shutdowns_handler(message: Message, state: FSMContext) -> None:
     Returns:
         - None
     """
-    addresses = await fetch_addresses(state)
-    shutdowns = await fetch_shutdowns(state)
-    await answer(message, title=_("Ok, That's your information:"), entities=[addresses, *shutdowns])
+    await answer(message, _("Please wait ⏳..."))
+    try:
+        addresses = await fetch_addresses(state)
+        shutdowns = await fetch_shutdowns(state)
+    except Exception as exc:
+        logging.exception("Could not fetch shutdowns: %r", exc)
+        await answer(message, _("Hmm... something went wrong."))
+    else:
+        await answer(
+            message,
+            title=_("Ok, That's your information:"),
+            entities=[addresses, *shutdowns],
+        )

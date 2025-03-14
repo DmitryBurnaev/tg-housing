@@ -62,24 +62,27 @@ async def fetch_shutdowns(state: FSMContext) -> Sequence[Text | str]:
             continue
 
         title = SERVICE_NAME_MAP[shutdown_by_service.service]
-        print(title, shutdown_by_service.service, shutdowns_by_service)
         values = []
         for shutdown_info in shutdown_by_service.shutdowns:
-            values.append(
-                as_marked_section(
-                    shutdown_info.raw_address,
-                    as_key_value(_("Start"), shutdown_info.start_repr),
-                    as_key_value(_("End"), shutdown_info.end_repr),
-                    marker="   - ",
+            if shutdown_info.error:
+                values.append(
+                    as_marked_section(
+                        shutdown_info.raw_address,
+                        as_key_value(_("Error"), shutdown_info.error),
+                        marker="   ❗",
+                    )
                 )
-            )
-        result.append(
-            as_marked_section(
-                title,
-                *values,
-                marker=" ⚠︎ ",
-            )
-        )
+            else:
+                values.append(
+                    as_marked_section(
+                        shutdown_info.raw_address,
+                        as_key_value(_("Start"), shutdown_info.start_repr),
+                        as_key_value(_("End"), shutdown_info.end_repr),
+                        marker="   - ",
+                    )
+                )
+
+        result.append(as_marked_section(title, *values, marker=" ⚠︎ "))
 
     return result
 
