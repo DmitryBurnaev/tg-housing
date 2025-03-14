@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-17 10:04+0300\n"
+"POT-Creation-Date: 2025-03-13 23:32+0300\n"
 "PO-Revision-Date: 2024-12-09 10:01+0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -19,56 +19,75 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: src/handlers/bot_handlers.py:35
+#: src/handlers/bot_handlers.py:41
 msgid "What do you want?"
 msgstr "Что именно необходимо?"
 
-#: src/handlers/bot_handlers.py:39 src/handlers/bot_handlers.py:48
+#: src/handlers/bot_handlers.py:45 src/handlers/bot_handlers.py:54
 msgid "Add Address"
 msgstr "Добавить адрес"
 
-#: src/handlers/bot_handlers.py:40 src/handlers/bot_handlers.py:69
+#: src/handlers/bot_handlers.py:46 src/handlers/bot_handlers.py:75
 msgid "Remove Address"
 msgstr "Удалить адрес"
 
-#: src/handlers/bot_handlers.py:63
+#: src/handlers/bot_handlers.py:69
 msgid "Ok, Sent me your address (without city, default - SPB)"
 msgstr "Ок, отправь мне свой адрес (без города)"
 
-#: src/handlers/bot_handlers.py:88
+#: src/handlers/bot_handlers.py:94
 msgid "What address do you want to remove?"
 msgstr "Какой адрес ты хочешь убрать?"
 
-#: src/handlers/bot_handlers.py:118
+#: src/handlers/bot_handlers.py:120 src/handlers/bot_handlers.py:214
+#: src/handlers/bot_handlers.py:240
+msgid "Sorry, you are not authorized to do that."
+msgstr "Простите, но вы не авторизованы, что бы делать это."
+
+#: src/handlers/bot_handlers.py:124
+msgid "Please enter a new address."
+msgstr "Пожалуйста, введите новый адрес тут."
+
+#: src/handlers/bot_handlers.py:132
 #, python-brace-format
 msgid "Ups... we can't parse address \"{message_text} (got {new_address})\"."
-msgstr "Ух... не получилось понять о каком адресе идет речь. Вы ввели \"{message_text}\", мы поняли как: \"{new_address}\""
+msgstr ""
+"Ух... не получилось понять о каком адресе идет речь. Вы ввели "
+"\"{message_text}\", мы поняли как: \"{new_address}\""
 
-#: src/handlers/bot_handlers.py:134
+#: src/handlers/bot_handlers.py:150
 #, python-brace-format
 msgid "Ok, I'll remember your new address \"{new_address}\"."
 msgstr "Ок, я запомню твой новый адрес"
 
-#: src/handlers/bot_handlers.py:163
+#: src/handlers/bot_handlers.py:181
 #, python-brace-format
 msgid "OK. Address \"{message.text}\" was removed!"
 msgstr "Ок, адрес \"{message.text}\" я удалил!"
 
-#: src/handlers/bot_handlers.py:181
+#: src/handlers/bot_handlers.py:199
 msgid "Cancelled."
 msgstr "Отменено."
 
-#: src/handlers/bot_handlers.py:197
+#: src/handlers/bot_handlers.py:219
 #, python-brace-format
 msgid "Hi, {full_name}!"
 msgstr "Привет, {full_name}!"
 
-#: src/handlers/bot_handlers.py:220
+#: src/handlers/bot_handlers.py:246
 #, python-brace-format
 msgid "Ok, I forgot all for you, {full_name}!"
 msgstr "Ок, я забыл все о тебе, {full_name}!"
 
-#: src/handlers/bot_handlers.py:242
+#: src/handlers/bot_handlers.py:266
+msgid "Please wait ⏳..."
+msgstr "Пожалуйста подождите ⏳..."
+
+#: src/handlers/bot_handlers.py:272
+msgid "Hmm... something went wrong."
+msgstr "Хм... что-то не так с получением информации."
+
+#: src/handlers/bot_handlers.py:276
 msgid "Ok, That's your information:"
 msgstr "Ок, вот твоя информация:"
 
@@ -96,11 +115,15 @@ msgstr "Нет пока добавленных адресов :("
 msgid "No shutdowns :)"
 msgstr "Не нашел никаких отключений в ближайшем будущем :)"
 
-#: src/handlers/helpers.py:70
+#: src/handlers/helpers.py:72
+msgid "Error"
+msgstr "Ошибка"
+
+#: src/handlers/helpers.py:80
 msgid "Start"
 msgstr "Начало"
 
-#: src/handlers/helpers.py:71
+#: src/handlers/helpers.py:81
 msgid "End"
 msgstr "Окончание"
 

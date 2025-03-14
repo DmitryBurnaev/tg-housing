@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-17 10:07+0300\n"
+"POT-Creation-Date: 2025-03-13 23:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,56 +17,73 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/handlers/bot_handlers.py:35
+#: src/handlers/bot_handlers.py:41
 msgid "What do you want?"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:39 src/handlers/bot_handlers.py:48
+#: src/handlers/bot_handlers.py:45 src/handlers/bot_handlers.py:54
 msgid "Add Address"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:40 src/handlers/bot_handlers.py:69
+#: src/handlers/bot_handlers.py:46 src/handlers/bot_handlers.py:75
 msgid "Remove Address"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:63
+#: src/handlers/bot_handlers.py:69
 msgid "Ok, Sent me your address (without city, default - SPB)"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:88
+#: src/handlers/bot_handlers.py:94
 msgid "What address do you want to remove?"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:118
+#: src/handlers/bot_handlers.py:120 src/handlers/bot_handlers.py:214
+#: src/handlers/bot_handlers.py:240
+msgid "Sorry, you are not authorized to do that."
+msgstr ""
+
+#: src/handlers/bot_handlers.py:124
+msgid "Please enter a new address."
+msgstr ""
+
+#: src/handlers/bot_handlers.py:132
 #, python-brace-format
 msgid "Ups... we can't parse address \"{message_text} (got {new_address})\"."
 msgstr ""
 
-#: src/handlers/bot_handlers.py:134
+#: src/handlers/bot_handlers.py:150
 #, python-brace-format
 msgid "Ok, I'll remember your new address \"{new_address}\"."
 msgstr ""
 
-#: src/handlers/bot_handlers.py:163
+#: src/handlers/bot_handlers.py:181
 #, python-brace-format
 msgid "OK. Address \"{message.text}\" was removed!"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:181
+#: src/handlers/bot_handlers.py:199
 msgid "Cancelled."
 msgstr ""
 
-#: src/handlers/bot_handlers.py:197
+#: src/handlers/bot_handlers.py:219
 #, python-brace-format
 msgid "Hi, {full_name}!"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:220
+#: src/handlers/bot_handlers.py:246
 #, python-brace-format
 msgid "Ok, I forgot all for you, {full_name}!"
 msgstr ""
 
-#: src/handlers/bot_handlers.py:242
+#: src/handlers/bot_handlers.py:266
+msgid "Please wait ⏳..."
+msgstr ""
+
+#: src/handlers/bot_handlers.py:272
+msgid "Hmm... something went wrong."
+msgstr ""
+
+#: src/handlers/bot_handlers.py:276
 msgid "Ok, That's your information:"
 msgstr ""
 
@@ -94,10 +111,14 @@ msgstr ""
 msgid "No shutdowns :)"
 msgstr ""
 
-#: src/handlers/helpers.py:70
+#: src/handlers/helpers.py:72
+msgid "Error"
+msgstr ""
+
+#: src/handlers/helpers.py:80
 msgid "Start"
 msgstr ""
 
-#: src/handlers/helpers.py:71
+#: src/handlers/helpers.py:81
 msgid "End"
 msgstr ""
