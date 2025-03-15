@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-13 23:32+0300\n"
+"POT-Creation-Date: 2025-03-15 16:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -107,18 +107,23 @@ msgstr ""
 msgid "No address yet :("
 msgstr ""
 
-#: src/handlers/helpers.py:57
+#: src/handlers/helpers.py:60
 msgid "No shutdowns :)"
 msgstr ""
 
-#: src/handlers/helpers.py:72
+#: src/handlers/helpers.py:103
 msgid "Error"
 msgstr ""
 
-#: src/handlers/helpers.py:80
+#: src/handlers/helpers.py:111
 msgid "Start"
 msgstr ""
 
-#: src/handlers/helpers.py:81
+#: src/handlers/helpers.py:112
 msgid "End"
+msgstr ""
+
+#: src/cli/check_all.py:82
+#, python-brace-format
+msgid "Hi, {user}. I've detected some shutdowns for your addresses:"
 msgstr ""

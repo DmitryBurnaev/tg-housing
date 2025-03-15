@@ -2,24 +2,22 @@
 
 import asyncio
 import logging.config
-from argparse import ArgumentParser
-from collections import defaultdict
 from typing import DefaultDict
+from collections import defaultdict
 
-from aiogram.methods.send_message import SendMessage
-from aiogram.types import MessageEntity
-from aiogram.utils.formatting import Text, as_key_value, as_marked_section
-from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram import Bot
-from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.utils.formatting import as_list
+from aiogram.client.default import DefaultBotProperties
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.i18n import _
 from src.config import app as app_config
 from src.config import logging as logging_config
 from src.config import constants as constants
 from src.db.repository import UserRepository
 from src.db.session import session_scope
-from src.handlers.helpers import SERVICE_NAME_MAP, prepare_entities
+from src.handlers.helpers import prepare_entities
 from src.providers.shutdowns import ShutDownByServiceInfo, ShutDownProvider
 
 logging.config.dictConfig(logging_config.LOGGING_CONFIG)
@@ -69,29 +67,23 @@ async def get_shutdowns_per_user(session: AsyncSession) -> dict[int, list[ShutDo
 async def send_shutdowns(
     bot: Bot, session: AsyncSession, shutdowns: dict[int, list[ShutDownByServiceInfo]]
 ) -> None:
-    repository = UserRepository(session)
+    """Prepares and send found shutdowns to TG's chats (related to stored users)"""
 
-    # def prepare_entities() -> list[MessageEntity]:
-    #     entities = entities or []
-    #     content = as_list(title, *entities, sep="\n\n")
-    #     reply_markup = ReplyKeyboardRemove() if reply_keyboard else None
-    #
-    #     await message.answer(
-    #         parse_mode=ParseMode.MARKDOWN,
-    #         reply_markup=reply_markup,
-    #         **content.as_kwargs(replace_parse_mode=False),
-    #     )
+    user_repository = UserRepository(session)
 
     for user_id, shutdowns_by_service in shutdowns.items():
-        user = await repository.get(user_id)
+        user = await user_repository.get(user_id)
         logger.info("Sending shutdowns for %s. Found %i items", user, len(shutdowns_by_service))
         send_entities = prepare_entities(shutdowns_by_service)
+        title = _(
+            "Hi, {user}. I've detected some shutdowns for your addresses:".format(user=user.name)
+        )
+        content = as_list(title, *send_entities, sep="\n\n")
 
         await bot.send_message(
             chat_id=user.chat_id,
-            text=f"hi, {user.name}. You have {len(shutdowns_by_service)} shutdowns.",
+            **content.as_kwargs(replace_parse_mode=False),
         )
-        # await SendMessage(user.chat_id, "", entities=send_entities)
 
 
 #

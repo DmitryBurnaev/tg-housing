@@ -47,7 +47,7 @@ locale-init:
 
 locale-update:
 	@echo Localization: update tokens...
-	xgettext -o src/i18n/messages.pot src/handlers/*.py
+	xgettext -o src/i18n/messages.pot src/handlers/*.py src/cli/*.py
 	msgmerge --update src/i18n/ru/LC_MESSAGES/messages.po src/i18n/messages.pot
 
 locale-compile:

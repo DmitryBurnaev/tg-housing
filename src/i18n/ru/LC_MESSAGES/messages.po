@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-13 23:32+0300\n"
+"POT-Creation-Date: 2025-03-15 16:23+0300\n"
 "PO-Revision-Date: 2024-12-09 10:01+0300\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -111,21 +111,26 @@ msgstr "Твои адреса:"
 msgid "No address yet :("
 msgstr "Нет пока добавленных адресов :("
 
-#: src/handlers/helpers.py:57
+#: src/handlers/helpers.py:60
 msgid "No shutdowns :)"
 msgstr "Не нашел никаких отключений в ближайшем будущем :)"
 
-#: src/handlers/helpers.py:72
+#: src/handlers/helpers.py:103
 msgid "Error"
 msgstr "Ошибка"
 
-#: src/handlers/helpers.py:80
+#: src/handlers/helpers.py:111
 msgid "Start"
 msgstr "Начало"
 
-#: src/handlers/helpers.py:81
+#: src/handlers/helpers.py:112
 msgid "End"
 msgstr "Окончание"
+
+#: src/cli/check_all.py:82
+#, python-brace-format
+msgid "Hi, {user}. I've detected some shutdowns for your addresses:"
+msgstr "Привет, {user}. Я нашел отключения в ближайшее время для твоих адресов:"
 
 #, fuzzy
 #~ msgid "remove address"
