@@ -16,6 +16,11 @@ elif [ "${APP_SERVICE}" = "test" ]
     coverage run -m pytest -o cache_dir=/tmp && \
     coverage report
 
+elif [ "${APP_SERVICE}" = "check-all" ]
+  then
+    cd /app
+    python -m src.cli.check_all
+
 else
   echo "APP_SERVICE environment variable is unexpected or was not provided (APP_SERVICE='${APP_SERVICE}')" >&2
   kill -s SIGINT 1

@@ -17,8 +17,8 @@ from aiogram.types import (
     KeyboardButton,
 )
 
-from src.config.constants import SupportedCity
 from src.i18n import _
+from src.config.constants import SupportedCity
 from src.handlers.helpers import (
     UserAddressStatesGroup,
     fetch_addresses,

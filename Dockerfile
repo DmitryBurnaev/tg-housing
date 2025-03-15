@@ -37,9 +37,9 @@ RUN groupadd --system tg-housing --gid 1005 && \
     useradd --no-log-init --system --gid tg-housing --uid 1005 tg-housing
 
   # Add cron setup
-RUN echo "0 0 * * * /usr/local/bin/python /app/src/cli/show_users.py >> /app/.data/cron.log 2>&1" > /etc/cron.d/show_users \
-  && chmod 0644 /etc/cron.d/show_users \
-  && crontab /etc/cron.d/show_users
+RUN echo "6 0 * * * /usr/local/bin/python /app/src/cli/check_all.py >> /app/.data/cron.log 2>&1" > /etc/cron.d/check-all \
+  && chmod 0644 /etc/cron.d/check-all \
+  && crontab /etc/cron.d/check-all
 
 USER tg-housing
 

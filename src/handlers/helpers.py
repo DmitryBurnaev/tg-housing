@@ -6,8 +6,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.formatting import as_marked_section, as_key_value, Text, as_list
 
-from src.config.constants import SupportedCity, SupportedService
 from src.i18n import _
+from src.config.constants import SupportedCity, SupportedService
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 
@@ -88,7 +88,9 @@ async def answer(
 
 def prepare_entities(shutdowns_by_service: list[ShutDownByServiceInfo]) -> Sequence[str | Text]:
     """Form the text entities (available for sending via docker's bot) from fetched shutdowns"""
+
     result: list[Text] = []
+
     for shutdown_by_service in shutdowns_by_service:
         if not shutdown_by_service.shutdowns:
             continue
