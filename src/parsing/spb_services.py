@@ -6,7 +6,7 @@ from typing import NamedTuple, cast, Sequence
 from lxml import html
 
 from src.decorators import set_locale_decorator
-from src.config.app import SupportedService
+from src.config.constants import SupportedService
 from src.parsing.data_models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
 from src.utils import parse_address, ParsedAddress, parse_street_name_regex
@@ -26,6 +26,7 @@ class SPBElectricityParser(BaseParser):
         self,
         service: SupportedService,
         address: Address,
+        fetched_content: str,
     ) -> dict[Address, set[DateRange]]:
         """
         Parses websites by URL's provided in params
@@ -34,8 +35,7 @@ class SPBElectricityParser(BaseParser):
         :return: given data from website
         """
 
-        html_content = self._get_content(service, address)
-        tree: html.HtmlElement = html.fromstring(html_content)
+        tree: html.HtmlElement = html.fromstring(fetched_content)
         rows: SeqHTML = cast(SeqHTML, tree.xpath("//table/tbody/tr"))
         if not rows:
             logger.info("No data found for service: %s", service)
@@ -114,9 +114,9 @@ class SPBHotWaterParser(BaseParser):
         self,
         service: SupportedService,
         address: Address,
+        fetched_content: str,
     ) -> dict[Address, set[DateRange]]:
-        html_content = self._get_content(service, address)
-        tree = html.fromstring(html_content)
+        tree = html.fromstring(fetched_content)
         rows: SeqHTML = cast(SeqHTML, tree.xpath("//table[@class='graph']/tbody/tr"))
         if not rows:
             logger.info(
@@ -236,9 +236,9 @@ class SPBColdWaterParser(BaseParser):
         self,
         service: SupportedService,
         address: Address,
+        fetched_content: str,
     ) -> dict[Address, set[DateRange]]:
-        html_content = self._get_content(service, address)
-        tree = html.fromstring(html_content)
+        tree = html.fromstring(fetched_content)
         rows: SeqHTML = cast(SeqHTML, tree.xpath("//div[@class='listplan-item']"))
         if not rows:
             logger.info("Parsing [%(service)s] No data found for service", service)

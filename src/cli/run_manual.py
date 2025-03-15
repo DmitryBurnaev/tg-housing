@@ -3,7 +3,7 @@ import logging.config
 import pprint
 import uuid
 
-from src.config.app import SupportedCity, SupportedService
+from src.config.constants import SupportedCity, SupportedService
 from src.config.logging import LOGGING_CONFIG
 from src.parsing.data_models import User
 from src.parsing.main_parsing import BaseParser
