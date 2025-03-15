@@ -73,6 +73,10 @@ async def send_shutdowns(
 
     for user_id, shutdowns_by_service in shutdowns.items():
         user = await user_repository.get(user_id)
+        if not shutdowns_by_service:
+            logger.info("No shutdowns found for user: '%s'", user)
+            continue
+
         logger.info("Sending shutdowns for %s. Found %i items", user, len(shutdowns_by_service))
         send_entities = prepare_entities(shutdowns_by_service)
         title = _(
@@ -84,16 +88,6 @@ async def send_shutdowns(
             chat_id=user.chat_id,
             **content.as_kwargs(replace_parse_mode=False),
         )
-
-
-#
-# def create_parser() -> ArgumentParser:
-#     parser = ArgumentParser()
-#     parser.add_argument("--token", help="Telegram Bot API Token")
-#     parser.add_argument("--chat-id", type=int, help="Target chat id")
-#     parser.add_argument("--message", "-m", help="Message text to sent", default="Hello, World!")
-#
-#     return parser
 
 
 async def main() -> None:
