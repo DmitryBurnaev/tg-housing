@@ -2,7 +2,8 @@ import logging
 import datetime
 from typing import NamedTuple, Type
 
-from src.config.app import SupportedService, SupportedCity, DT_FORMAT, D_FORMAT
+from src.config.app import DT_FORMAT, D_FORMAT
+from src.config.constants import SupportedCity, SupportedService
 from src.parsing.data_models import Address
 from src.parsing.main_parsing import BaseParser
 
@@ -89,7 +90,11 @@ class ShutDownProvider:
         return result
 
     @classmethod
-    def for_addresses(cls, addresses: list[str]) -> list[ShutDownByServiceInfo]:
+    def for_addresses(
+        cls,
+        city: SupportedCity,
+        addresses: list[str],
+    ) -> list[ShutDownByServiceInfo]:
         """Returns a structure with ShutDownInfo instances
         Examples:
         [
@@ -105,7 +110,7 @@ class ShutDownProvider:
         shutdown_info_list = []
         for service in SupportedService.members():
             for address in addresses:
-                if shutdowns := cls.for_address(SupportedCity.SPB, address, service):
+                if shutdowns := cls.for_address(city, address, service):
                     shutdown_info_list.append(
                         ShutDownByServiceInfo(service=service, shutdowns=shutdowns)
                     )

@@ -10,7 +10,7 @@ from aiogram.fsm.state import State
 from aiogram.fsm.storage.base import BaseStorage, StorageKey, StateType
 from aiogram.types import User as TelegramUser
 
-from src.config.app import SupportedCity
+from src.config.constants import SupportedCity
 from src.db.repository import UserRepository
 
 logger = logging.getLogger(__name__)

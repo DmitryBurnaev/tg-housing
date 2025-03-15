@@ -9,17 +9,42 @@ import httpx
 
 from src.config.app import (
     DATA_PATH,
-    RESOURCE_URLS,
     SSL_REQUEST_VERIFY,
-    SupportedCity,
-    SupportedService,
     PARSE_DAYS_BEFORE,
     PARSE_DAYS_AFTER,
 )
+from src.config.constants import SupportedCity, SupportedService, RESOURCE_URLS
 from src.parsing.data_models import Address, DateRange
 from src.utils import ADDRESS_DEFAULT_PATTERN, utcnow
 
 logger = logging.getLogger("parsing.main")
+
+
+class ParsingError(Exception):
+    message: str = "Unknown parsing error"
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(message={self.message!r})"
+
+
+class SkipParsingError(ParsingError):
+    message: str = "Skipping parsing"
+
+    def __init__(self, service: SupportedService, address: Address, message: str) -> None:
+        self.service = service
+        self.address = address
+        self.message = message
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(message={self.message!r}, address={self.address!r}, "
+            f"service={self.service!r})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"SkipParsingError: {self.message} (address={self.address!r}, service={self.service!r})"
+        )
 
 
 class BaseParser(abc.ABC):
@@ -35,7 +60,7 @@ class BaseParser(abc.ABC):
     service: ClassVar[SupportedService] = NotImplemented
 
     def __init__(self, city: SupportedCity, verbose: bool = False) -> None:
-        self.urls = RESOURCE_URLS[city]
+        self.urls: dict[SupportedService, str] | None = RESOURCE_URLS.get(city)
         self.city = city
         self.date_start = utcnow().date() - timedelta(days=self.days_before)
         self.finish_time_filter = self.date_start + timedelta(days=self.days_after)
@@ -52,8 +77,18 @@ class BaseParser(abc.ABC):
         Returns:
             dict with mapping: user-address -> list of dates
         """
-        logger.debug(f"Parsing for service: {self.service} ({user_address})")
-        parsed_data: dict[Address, set[DateRange]] = self._parse_website(self.service, user_address)
+        logger.info(f"Parsing for service: {self.service} ({user_address})")
+        try:
+            content: str = self._get_content(self.service, user_address)
+            parsed_data: dict[Address, set[DateRange]] = self._parse_website(
+                service=self.service,
+                address=user_address,
+                fetched_content=content,
+            )
+        except ParsingError as exc:
+            logger.error("Unable parsing: %r", exc)
+            return {}
+
         logger.debug(
             "Parsed %(service)s | \n%(parsed_data)s",
             {
@@ -73,6 +108,10 @@ class BaseParser(abc.ABC):
         def cashed_filename(url: str) -> str:
             dt = datetime.now(tz=timezone.utc).date().isoformat()
             return f"{service.lower()}_{dt}_{hashlib.sha256(url.encode('utf-8')).hexdigest()}.html"
+
+        if not self.urls:
+            logger.info("No urls available for city %s detected. Skip parsing", self.city)
+            raise SkipParsingError(self.service, address, "No urls available")
 
         url = self.urls[service].format(
             city="",
@@ -104,7 +143,7 @@ class BaseParser(abc.ABC):
 
     @abc.abstractmethod
     def _parse_website(
-        self, service: SupportedService, address: Address
+        self, service: SupportedService, address: Address, fetched_content: str
     ) -> dict[Address, set[DateRange]]:
         pass
 

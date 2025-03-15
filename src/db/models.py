@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
+from src.config.constants import SupportedCity
 from src.utils import utcnow
 
 
@@ -33,13 +34,17 @@ class User(BaseModel):
     )
 
     def __str__(self) -> str:
-        return f"User {self.name} "
+        return f"User #{self.id} {self.name} "
 
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, name={self.name!r})"
 
-    async def get_addresses(self) -> list["UserAddress"]:
-        return [address for address in (await self.awaitable_attrs.addresses)]
+    async def get_addresses(self, city: SupportedCity | None = None) -> list["UserAddress"]:
+        addresses: list[UserAddress] = await self.awaitable_attrs.addresses
+        if city is not None:
+            addresses = [address for address in addresses]
+
+        return addresses
 
 
 class UserAddress(BaseModel):

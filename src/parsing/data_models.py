@@ -5,7 +5,8 @@ import logging
 from re import Pattern
 from typing import NamedTuple
 
-from src.config.app import SupportedCity, DEBUG_SHUTDOWNS
+from src.config.app import DEBUG_SHUTDOWNS
+from src.config.constants import SupportedCity
 from src.utils import parse_address, ADDRESS_DEFAULT_PATTERN
 
 logger = logging.getLogger(__name__)

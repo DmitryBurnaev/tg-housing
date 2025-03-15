@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, reveal_type
 
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
@@ -6,8 +6,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.utils.formatting import as_marked_section, as_key_value, Text, as_list
 
+from src.config.constants import SupportedCity, SupportedService
 from src.i18n import _
-from src.config.app import SupportedService
 from src.providers.shutdowns import ShutDownProvider, ShutDownByServiceInfo
 
 
@@ -52,10 +52,42 @@ async def fetch_shutdowns(state: FSMContext) -> Sequence[Text | str]:
     if not (addresses := await get_addresses(state)):
         return [_("No address yet :(")]
 
-    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(addresses)
+    shutdowns_by_service: list[ShutDownByServiceInfo] = ShutDownProvider.for_addresses(
+        city=SupportedCity.SPB,  # TODO: use fact address from user's data
+        addresses=addresses,
+    )
     if not shutdowns_by_service:
         return [_("No shutdowns :)")]
 
+    return prepare_entities(shutdowns_by_service)
+
+
+async def get_addresses(state: FSMContext) -> list[str]:
+    """Extract addresses from DB, related for current user (detected by user's ID in the state)"""
+    data = await state.get_data()
+    return data.get("addresses") or []
+
+
+async def answer(
+    message: Message,
+    title: str,
+    entities: Sequence[str | Text] | None = None,
+    reply_keyboard: bool = False,
+) -> None:
+    """Sends answer with provided message, title and additional entities."""
+    entities = entities or []
+    content = as_list(title, *entities, sep="\n\n")
+    reply_markup = ReplyKeyboardRemove() if reply_keyboard else None
+
+    await message.answer(
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=reply_markup,
+        **content.as_kwargs(replace_parse_mode=False),
+    )
+
+
+def prepare_entities(shutdowns_by_service: list[ShutDownByServiceInfo]) -> Sequence[str | Text]:
+    """Form the text entities (available for sending via docker's bot) from fetched shutdowns"""
     result: list[Text] = []
     for shutdown_by_service in shutdowns_by_service:
         if not shutdown_by_service.shutdowns:
@@ -85,27 +117,3 @@ async def fetch_shutdowns(state: FSMContext) -> Sequence[Text | str]:
         result.append(as_marked_section(title, *values, marker=" ⚠︎ "))
 
     return result
-
-
-async def get_addresses(state: FSMContext) -> list[str]:
-    """Extract addresses from DB, related for current user (detected by user's ID in the state)"""
-    data = await state.get_data()
-    return data.get("addresses") or []
-
-
-async def answer(
-    message: Message,
-    title: str,
-    entities: Sequence[str | Text] | None = None,
-    reply_keyboard: bool = False,
-) -> None:
-    """Sends answer with provided message, title and additional entities."""
-    entities = entities or []
-    content = as_list(title, *entities, sep="\n\n")
-    reply_markup = ReplyKeyboardRemove() if reply_keyboard else None
-
-    await message.answer(
-        parse_mode=ParseMode.MARKDOWN,
-        reply_markup=reply_markup,
-        **content.as_kwargs(replace_parse_mode=False),
-    )

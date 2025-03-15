@@ -1,3 +1,5 @@
+"""DB-specific module which provide specific operations on database."""
+
 import hashlib
 import json
 import logging
@@ -21,7 +23,7 @@ from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.decorators import decohints
-from src.config.app import SupportedCity
+from src.config.constants import SupportedCity
 from src.db.models import BaseModel, User, UserNotification, UserAddress
 from src.db.session import make_sa_session
 
@@ -64,6 +66,8 @@ def transaction_commit(func: Callable[P, Awaitable[RT]]) -> Callable[P, Awaitabl
 
 
 class UsersFilter(TypedDict):
+    """Simple structure to filter users by specific params"""
+
     city: SupportedCity
 
 
@@ -203,18 +207,24 @@ class UserRepository(BaseRepository[User]):
         """Extra filtering users by some parameters."""
         return await self.all(**filters)
 
-    async def get_addresses(self, user_id: int) -> list[UserAddress]:
+    async def get_addresses(
+        self,
+        user_id: int,
+        city: SupportedCity | None = None,
+    ) -> list[UserAddress]:
         """
         Returns list of user's addresses
         """
         user: User = await self.get(user_id)
-        return await user.get_addresses()
+        addresses = await user.get_addresses(city)
+        return addresses
 
-    async def get_addresses_list(self, user_id: int) -> list[str]:
+    async def get_addresses_plain(
+        self, user_id: int, city: SupportedCity | None = None
+    ) -> list[str]:
         """Returns list of user's addresses"""
         user: User = await self.get(user_id)
-        addresses = await user.get_addresses()
-        return [user_address.address for user_address in addresses]
+        return [user_address.address for user_address in (await user.get_addresses(city))]
 
     @transaction_commit
     async def update_addresses(
