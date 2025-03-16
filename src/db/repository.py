@@ -68,7 +68,8 @@ def transaction_commit(func: Callable[P, Awaitable[RT]]) -> Callable[P, Awaitabl
 class UsersFilter(TypedDict):
     """Simple structure to filter users by specific params"""
 
-    city: SupportedCity
+    ids: list[int] | None
+    city: SupportedCity | None
 
 
 class BaseRepository(Generic[ModelT]):
@@ -161,7 +162,7 @@ class BaseRepository(Generic[ModelT]):
 
         return row[0]
 
-    async def all(self, **filters: str | int) -> list[ModelT]:
+    async def all(self, **filters: int | str | list[int] | None) -> list[ModelT]:
         """Selects instances from DB"""
 
         statement = select(self.model).filter_by(**filters)

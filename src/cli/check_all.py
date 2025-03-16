@@ -2,6 +2,7 @@
 
 import asyncio
 import logging.config
+from argparse import ArgumentParser
 from typing import DefaultDict
 from collections import defaultdict
 
@@ -24,11 +25,13 @@ logging.config.dictConfig(logging_config.LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 
-async def get_shutdowns_per_user(session: AsyncSession) -> dict[int, list[ShutDownByServiceInfo]]:
+async def get_shutdowns_per_user(
+    session: AsyncSession, user_ids: list[int] | None = None
+) -> dict[int, list[ShutDownByServiceInfo]]:
     """Fetch and display all users from the database."""
 
-    repository = UserRepository(session)
-    users = await repository.all()
+    user_repository = UserRepository(session)
+    users = await user_repository.filter(ids=user_ids)
     if not users:
         logger.info("No users found in database")
         return {}
@@ -45,7 +48,7 @@ async def get_shutdowns_per_user(session: AsyncSession) -> dict[int, list[ShutDo
         logger.info(" ==> ID: %d, Chat ID: %d, User: %s <==", user.id, user.chat_id, user.name)
         for city in constants.SupportedCity:
             logger.info(f"Finding shutdowns for {city.name}: {user.id}")
-            addresses = await repository.get_addresses_plain(user.id, city)
+            addresses = await user_repository.get_addresses_plain(user.id, city)
             tasks.append(
                 asyncio.to_thread(
                     fetch_for_user,
@@ -90,11 +93,20 @@ async def send_shutdowns(
         )
 
 
+def create_parser() -> ArgumentParser:
+    """Get values from user's input"""
+    parser = ArgumentParser()
+    parser.add_argument("--chat-id", type=int, help="Target chat id")
+    return parser
+
+
 async def main() -> None:
     """
     Main function for fetching shutdowns for each user in DB,
     preparing messages and sending to chats.
     """
+    parser = create_parser()
+    ns = parser.parse_args()
 
     token = app_config.TG_BOT_API_TOKEN
     if not token:
