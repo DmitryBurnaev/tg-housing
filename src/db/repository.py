@@ -18,7 +18,7 @@ from typing import (
     ParamSpec,
 )
 
-from sqlalchemy import select
+from sqlalchemy import select, BinaryExpression
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -69,7 +69,6 @@ class UsersFilter(TypedDict):
     """Simple structure to filter users by specific params"""
 
     ids: list[int] | None
-    city: SupportedCity | None
 
 
 class BaseRepository(Generic[ModelT]):
@@ -164,8 +163,14 @@ class BaseRepository(Generic[ModelT]):
 
     async def all(self, **filters: int | str | list[int] | None) -> list[ModelT]:
         """Selects instances from DB"""
+        filters_stmts: list[BinaryExpression] = []
+        if ids := filters.pop("ids", None):
+            filters_stmts.append([self.model.id.in_(ids)])
 
         statement = select(self.model).filter_by(**filters)
+        if filters_stmts:
+            statement = statement.filter(*filters_stmts)
+
         result = await self.session.execute(statement)
         return [row[0] for row in result.fetchall()]
 
