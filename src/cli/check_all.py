@@ -2,7 +2,7 @@
 
 import asyncio
 import logging.config
-from argparse import ArgumentParser
+from argparse import ArgumentParser, ONE_OR_MORE
 from typing import DefaultDict
 from collections import defaultdict
 
@@ -96,7 +96,7 @@ async def send_shutdowns(
 def create_parser() -> ArgumentParser:
     """Get values from user's input"""
     parser = ArgumentParser()
-    parser.add_argument("--chat-id", type=int, help="Target chat id")
+    parser.add_argument("--user-ids", type=int, nargs=ONE_OR_MORE, help="Target user ids")
     return parser
 
 
@@ -120,7 +120,7 @@ async def main() -> None:
             default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
         ) as bot,
     ):
-        shutdowns = await get_shutdowns_per_user(session)
+        shutdowns = await get_shutdowns_per_user(session, user_ids=ns.user_ids)
         await send_shutdowns(bot, session, shutdowns)
 
 
