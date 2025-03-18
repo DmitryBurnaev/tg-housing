@@ -163,9 +163,9 @@ class BaseRepository(Generic[ModelT]):
 
     async def all(self, **filters: int | str | list[int] | None) -> list[ModelT]:
         """Selects instances from DB"""
-        filters_stmts: list[BinaryExpression] = []
-        if ids := filters.pop("ids", None):
-            filters_stmts.append([self.model.id.in_(ids)])
+        filters_stmts: list[BinaryExpression[bool]] = []
+        if (ids := filters.pop("ids", None)) and isinstance(ids, list):
+            filters_stmts.append(self.model.id.in_(ids))
 
         statement = select(self.model).filter_by(**filters)
         if filters_stmts:
