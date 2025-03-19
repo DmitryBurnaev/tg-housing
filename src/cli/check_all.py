@@ -82,11 +82,8 @@ async def send_shutdowns(
 
         logger.info("Sending shutdowns for %s. Found %i items", user, len(shutdowns_by_service))
         send_entities = prepare_entities(shutdowns_by_service)
-        title = _(
-            "Hi, {user}. I've detected some shutdowns for your addresses:".format(user=user.name)
-        )
+        title = _("Hi! \nI've detected some information:").format(full_name=user.name)
         content = as_list(title, *send_entities, sep="\n\n")
-
         await bot.send_message(
             chat_id=user.chat_id,
             **content.as_kwargs(replace_parse_mode=False),
