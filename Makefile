@@ -42,7 +42,7 @@ docker-test:
 
 locale-init:
 	@echo Localization: init...
-	xgettext -o src/i18n/messages.pot src/handlers/*.py
+	xgettext -o src/i18n/messages.pot src/handlers/*.py src/cli/*.py
 	msginit -i src/i18n/messages.pot -o src/i18n/ru/LC_MESSAGES/messages.po -l ru_RU.UTF-8 --no-translator
 
 locale-update:
