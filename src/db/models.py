@@ -81,21 +81,14 @@ class UserNotification(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    address_id: Mapped[int] = mapped_column(ForeignKey("user_addresses.id"))
-    notification_type: Mapped[str]
-    notification_hash: Mapped[str]
-    notified_at: Mapped[datetime]
+    hash: Mapped[str]
+    created_at: Mapped[datetime]
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="notifications")
-    address: Mapped["UserAddress"] = relationship(back_populates="notifications")
 
     def __str__(self) -> str:
-        return f"UserNotification(type={self.notification_type}, at={self.notified_at})"
+        return repr(self)
 
     def __repr__(self) -> str:
-        return (
-            f"UserNotification(id={self.id}, user_id={self.user_id}, "
-            f"address_id={self.address_id}, type={self.notification_type}, "
-            f"at={self.notified_at})"
-        )
+        return f"UserNotification(id={self.id}, user_id={self.user_id}, at={self.created_at})"
