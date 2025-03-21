@@ -36,8 +36,9 @@ RUN apt-get update \
 RUN groupadd --system tg-housing --gid 1005 && \
     useradd --no-log-init --system --gid tg-housing --uid 1005 tg-housing
 
-  # Add cron setup
-RUN echo "6 0 * * * /usr/local/bin/python /app/src/cli/check_all.py >> /app/.data/cron.log 2>&1" > /etc/cron.d/check-all \
+# Add cron setup (run checking each morning at 6:00 UTC)
+# RUN echo "0 6 * * * /usr/local/bin/python /app/src/cli/check_all.py >> /app/.data/cron.log 2>&1" > /etc/cron.d/check-all \
+RUN echo "* * * * * APP_SERVICE=check-all /bin/sh /app/docker-entrypoint >> /app/.data/cron.log 2>&1" > /etc/cron.d/check-all \
   && chmod 0644 /etc/cron.d/check-all \
   && crontab /etc/cron.d/check-all
 
