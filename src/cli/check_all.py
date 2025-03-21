@@ -1,12 +1,10 @@
 """CLI script to display all users in the database."""
 
 import asyncio
-import hashlib
 import logging.config
-from argparse import ArgumentParser, ONE_OR_MORE
-from datetime import datetime
 from typing import DefaultDict
 from collections import defaultdict
+from argparse import ArgumentParser, ONE_OR_MORE
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
@@ -86,11 +84,6 @@ async def send_shutdowns(
         title = _("Hi! \nI've detected some information:").format(full_name=user.name)
         content = as_list(title, *send_entities, sep="\n\n")
         string_content: str = content.as_pretty_string()
-        with open(f"res{datetime.now().strftime('%Y%m%d-%H%M%S')}.txt", "w") as file:
-            file.write(string_content)
-            file.write("\n")
-            file.write(hashlib.sha256(string_content.encode()).hexdigest())
-
         already_sent = await user_repository.has_notification(user.id, string_content)
         if already_sent:
             logger.info("Sending notification already exists for user: '%s' (SKIP)", user)

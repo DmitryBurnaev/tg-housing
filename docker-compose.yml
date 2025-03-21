@@ -24,3 +24,15 @@ services:
       - APP_SERVICE=test
     volumes:
       - ${PWD}/.data:/app/.data
+
+  check-all:
+    image:
+      tg-housing-service:test
+    build:
+      context: .
+    env_file:
+      - .env
+    environment:
+      - APP_SERVICE=check-all
+    volumes:
+      - ${PWD}/.data:/app/.data

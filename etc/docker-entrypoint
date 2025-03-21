@@ -19,7 +19,7 @@ elif [ "${APP_SERVICE}" = "test" ]
 elif [ "${APP_SERVICE}" = "check-all" ]
   then
     cd /app
-    python -m src.cli.check_all
+    python -m src.cli.check_all --user-ids ${USER_ID}
 
 else
   echo "APP_SERVICE environment variable is unexpected or was not provided (APP_SERVICE='${APP_SERVICE}')" >&2
