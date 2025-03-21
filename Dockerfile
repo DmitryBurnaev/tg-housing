@@ -40,7 +40,10 @@ RUN groupadd --system tg-housing --gid 1005 && \
 # RUN echo "0 6 * * * /usr/local/bin/python /app/src/cli/check_all.py >> /app/.data/cron.log 2>&1" > /etc/cron.d/check-all \
 RUN echo "* * * * * APP_SERVICE=check-all /bin/sh /app/docker-entrypoint >> /app/.data/cron.log 2>&1" > /etc/cron.d/check-all \
   && chmod 0644 /etc/cron.d/check-all \
-  && crontab /etc/cron.d/check-all
+  && crontab /etc/cron.d/check-all \
+  && touch /var/run/crond.pid \
+  && chown tg-housing:tg-housing /var/run/crond.pid \
+  && chmod gu+s /usr/sbin/cron
 
 USER tg-housing
 
