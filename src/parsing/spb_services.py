@@ -1,4 +1,3 @@
-import pprint
 from datetime import datetime, date
 from collections import defaultdict
 from typing import NamedTuple, cast, Sequence
@@ -87,8 +86,6 @@ class SPBElectricityParser(BaseParser):
                     )
                     result[address_key].add(DateRange(start_time, end_time))
 
-        pprint.pprint(result, indent=4)
-        print("======")
         return result
 
     def _prepare_time(self, date: str, time: str) -> datetime | None:

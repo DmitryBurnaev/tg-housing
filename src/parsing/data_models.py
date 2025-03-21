@@ -109,20 +109,3 @@ class User:
             house=parsed_address.houses[0] if parsed_address.houses else None,
             raw=self.raw_address,
         )
-
-    def echo_results(self, result: dict[Address, set[DateRange]]) -> None:
-        if not self.address:
-            print(f"[{self.name}] No address specified")
-            return
-
-        print(f"[{self.name}] \n=== {self.address.raw} ===")
-        now_time = datetime.datetime.now(datetime.timezone.utc)
-        for address, date_ranges in result.items():
-            actual_ranges = []
-            for date_range in date_ranges:
-                if date_range > now_time:
-                    actual_ranges.append(date_range)
-
-            if actual_ranges:
-                print(f" - {address}")
-                print(f"   - {'\n   - '.join(map(str, actual_ranges))}")

@@ -66,7 +66,6 @@ class UserStorage(BaseStorage):
 
         city: SupportedCity | None = data.get("city")
         address: str | None = data.get("address")
-        print(data)
         if not city or not address:
             raise ValueError("Address data not found.")
 

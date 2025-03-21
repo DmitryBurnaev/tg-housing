@@ -57,11 +57,9 @@ class UserAddress(BaseModel):
     address: Mapped[str]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="addresses")
-    notifications: Mapped[list["UserNotification"]] = relationship(back_populates="address")
 
     def __repr__(self) -> str:
         return (
@@ -82,7 +80,7 @@ class UserNotification(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     hash: Mapped[str]
-    created_at: Mapped[datetime]
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="notifications")
