@@ -18,7 +18,7 @@ from typing import (
     ParamSpec,
 )
 
-from sqlalchemy import select, BinaryExpression
+from sqlalchemy import select, BinaryExpression, insert
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -267,7 +267,7 @@ class UserRepository(BaseRepository[User]):
             city=city,
         )
         user.addresses.append(user_address)
-        await self.flush_and_commit()
+        await self.session.flush([user_address])
         return user_address
 
     async def get_notifications(self, user_id: int) -> list[UserNotification]:
@@ -275,17 +275,23 @@ class UserRepository(BaseRepository[User]):
         user = await self.get(user_id)
         return user.notifications
 
-    async def has_notification(
-        self,
-        user_id: int,
-        notification_data: dict[str, Any],
-    ) -> bool:
+    async def has_notification(self, user_id: int, notification_data: str) -> bool:
         """Searching already sent notifications by provided notification data."""
         user = await self.get(user_id)
-        notification_hash = hashlib.sha256(json.dumps(notification_data).encode()).hexdigest()
+        notification_hash = hashlib.sha256(notification_data.encode()).hexdigest()
 
         statement = select(UserNotification).where(
             UserNotification.user_id == user.id,
-            UserNotification.notification_hash == notification_hash,
+            UserNotification.hash == notification_hash,
         )
         return (await self.session.execute(statement)).scalar() is not None
+
+    @transaction_commit
+    async def add_notification(self, user_id: int, notification_data: str) -> None:
+        """Adding fact about sending notification to the database"""
+        user = await self.get(user_id)
+        logger.info("[DB] Adding notification for user [%s]", user)
+        notification_hash = hashlib.sha256(notification_data.encode()).hexdigest()
+        notification = UserNotification(user_id=user.id, hash=notification_hash)
+        self.session.add(notification)
+        await self.session.flush([notification])

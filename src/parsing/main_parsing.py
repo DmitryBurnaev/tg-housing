@@ -85,6 +85,10 @@ class BaseParser(abc.ABC):
                 address=user_address,
                 fetched_content=content,
             )
+        except SkipParsingError as exc:
+            logger.debug(f"SkipParsing: {exc}")
+            return {}
+
         except ParsingError as exc:
             logger.error("Unable parsing: %r", exc)
             return {}

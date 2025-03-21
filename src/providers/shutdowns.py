@@ -1,5 +1,6 @@
 import logging
 import datetime
+from operator import itemgetter, attrgetter
 from typing import NamedTuple, Type
 
 from src.config.app import DT_FORMAT, D_FORMAT
@@ -112,7 +113,9 @@ class ShutDownProvider:
             for address in addresses:
                 if shutdowns := cls.for_address(city, address, service):
                     shutdown_info_list.append(
-                        ShutDownByServiceInfo(service=service, shutdowns=shutdowns)
+                        ShutDownByServiceInfo(
+                            service=service, shutdowns=sorted(shutdowns, key=attrgetter("start"))
+                        )
                     )
                     if shutdowns[0].error:
                         break

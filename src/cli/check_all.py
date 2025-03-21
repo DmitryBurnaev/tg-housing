@@ -1,8 +1,10 @@
 """CLI script to display all users in the database."""
 
 import asyncio
+import hashlib
 import logging.config
 from argparse import ArgumentParser, ONE_OR_MORE
+from datetime import datetime
 from typing import DefaultDict
 from collections import defaultdict
 
@@ -13,16 +15,15 @@ from aiogram.client.default import DefaultBotProperties
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.i18n import _
-from src.config import app as app_config
-from src.config import logging as logging_config
+from src.config.app import TG_BOT_API_TOKEN
+from src.config.logging import LOGGING_CONFIG
 from src.config import constants as constants
 from src.db.repository import UserRepository
 from src.db.session import session_scope
 from src.handlers.helpers import prepare_entities
 from src.providers.shutdowns import ShutDownByServiceInfo, ShutDownProvider
 
-logging.config.dictConfig(logging_config.LOGGING_CONFIG)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("cli")
 
 
 async def get_shutdowns_per_user(
@@ -84,10 +85,22 @@ async def send_shutdowns(
         send_entities = prepare_entities(shutdowns_by_service)
         title = _("Hi! \nI've detected some information:").format(full_name=user.name)
         content = as_list(title, *send_entities, sep="\n\n")
+        string_content: str = content.as_pretty_string()
+        with open(f"res{datetime.now().strftime('%Y%m%d-%H%M%S')}.txt", "w") as file:
+            file.write(string_content)
+            file.write("\n")
+            file.write(hashlib.sha256(string_content.encode()).hexdigest())
+
+        already_sent = await user_repository.has_notification(user.id, string_content)
+        if already_sent:
+            logger.info("Sending notification already exists for user: '%s' (SKIP)", user)
+            continue
+
         await bot.send_message(
             chat_id=user.chat_id,
             **content.as_kwargs(replace_parse_mode=False),
         )
+        await user_repository.add_notification(user.id, string_content)
 
 
 def create_parser() -> ArgumentParser:
@@ -102,18 +115,25 @@ async def main() -> None:
     Main function for fetching shutdowns for each user in DB,
     preparing messages and sending to chats.
     """
+    logging.config.dictConfig(LOGGING_CONFIG)
+    logging.captureWarnings(capture=True)
+
     parser = create_parser()
     ns = parser.parse_args()
 
-    token = app_config.TG_BOT_API_TOKEN
-    if not token:
+    if not TG_BOT_API_TOKEN:
         logger.error("TG bot API token (env `TG_BOT_API_TOKEN`)  not provided")
         exit(1)
+
+    if ns.user_ids:
+        logger.info("Fetching shutdowns for users: %s", ns.user_ids)
+    else:
+        logger.info("Fetching shutdowns for all users in DB")
 
     async with (
         session_scope() as session,
         Bot(
-            token=token,
+            token=TG_BOT_API_TOKEN,
             default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN),
         ) as bot,
     ):
