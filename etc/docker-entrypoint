@@ -3,23 +3,20 @@
 
 if [ "${APP_SERVICE}" = "bot" ]
   then
-    # Start cron daemon
-    service cron start
-    cd /app && python src/main.py
+    /bin/bash docker-crontab
+    python -m src.main
 
 elif [ "${APP_SERVICE}" = "test" ]
   then
     export COVERAGE_FILE=/tmp/.coverage
     export RUFF_CACHE_DIR=/tmp/.ruff
-    cd /app
     ruff check && \
     coverage run -m pytest -o cache_dir=/tmp && \
     coverage report
 
 elif [ "${APP_SERVICE}" = "check-all" ]
   then
-    cd /app
-    python -m src.cli.check_all --user-ids ${USER_ID}
+    python -m src.cli.check_all
 
 else
   echo "APP_SERVICE environment variable is unexpected or was not provided (APP_SERVICE='${APP_SERVICE}')" >&2

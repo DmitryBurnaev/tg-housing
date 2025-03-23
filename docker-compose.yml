@@ -4,6 +4,8 @@ services:
       tg-housing-service:bot
     build:
       context: .
+      args:
+        CRONTAB_RECORD: "* * * * *"
     env_file:
       - .env
     environment:
