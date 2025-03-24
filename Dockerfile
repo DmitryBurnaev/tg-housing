@@ -40,16 +40,18 @@ RUN groupadd --system tg-housing --gid 1005 && \
 
 # Crontab: pre-setup
 ENV CRONTAB_FILE=/etc/cron.d/check-all
-ENV CRONTAB_ENVFILE=/etc/cron.d/check-all
+ENV CRONTAB_ENVFILE=/app/container.env
 ENV CRONTAB_PIDFILE=/var/run/crond.pid
 ENV CRONTAB_RECORD=${CRONTAB_RECORD}
 ENV CRONTAB_LOGFILE=/app/.data/cron.log
 RUN touch ${CRONTAB_FILE} && \
     chmod 0640 ${CRONTAB_FILE} && \
+    chown tg-housing:tg-housing ${CRONTAB_FILE} && \
     touch ${CRONTAB_ENVFILE} && \
     chmod 0640 ${CRONTAB_ENVFILE} && \
     chown tg-housing:tg-housing ${CRONTAB_ENVFILE} && \
     touch ${CRONTAB_PIDFILE} && \
+    chown tg-housing:tg-housing ${CRONTAB_PIDFILE} && \
     chmod gu+s /usr/sbin/cron
 
 # Add cron setup (run checking each morning at 6:00 UTC)
