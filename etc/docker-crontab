@@ -16,12 +16,14 @@ echo "  log file: ${CRONTAB_LOGFILE}"
 
 echo ""
 echo "preparing crontab file: ${CRONTAB_FILE}..."
-echo "SHELL=/bin/bash" >> ${CRONTAB_FILE} && \
+#echo "SHELL=/bin/bash" >> ${CRONTAB_FILE} && \
 echo "BASH_ENV=${CRONTAB_ENVFILE}" >> ${CRONTAB_FILE} && \
-echo "${CRONTAB_RECORD} APP_SERVICE=${CRONTAB_APP_SERVICE}" /bin/bash /app/docker-entrypoint >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
+#echo "${CRONTAB_RECORD} APP_SERVICE=${CRONTAB_APP_SERVICE} /bin/bash /app/docker-entrypoint >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
+echo "${CRONTAB_RECORD} /usr/local/bin/python -m src.main >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
 echo "  formed file: ${CRONTAB_FILE}"
 echo ""
 service cron start
+#cron -f
 echo "  cron started..."
 
 echo ""
