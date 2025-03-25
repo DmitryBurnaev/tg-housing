@@ -16,7 +16,8 @@ elif [ "${APP_SERVICE}" = "test" ]
 
 elif [ "${APP_SERVICE}" = "check-all" ]
   then
-    python -m src.cli.check_all
+    export PYTHONPATH=/app
+    /usr/local/bin/python -m src.cli.check_all
 
 else
   echo "APP_SERVICE environment variable is unexpected or was not provided (APP_SERVICE='${APP_SERVICE}')" >&2

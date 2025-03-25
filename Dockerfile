@@ -44,28 +44,29 @@ ENV CRONTAB_ENVFILE=/app/container.env
 ENV CRONTAB_PIDFILE=/var/run/crond.pid
 ENV CRONTAB_RECORD=${CRONTAB_RECORD}
 ENV CRONTAB_LOGFILE=/app/.data/cron.log
-RUN touch ${CRONTAB_FILE} && \
-    chmod 0640 ${CRONTAB_FILE} && \
-    chown tg-housing:tg-housing ${CRONTAB_FILE} && \
-    touch ${CRONTAB_ENVFILE} && \
-    chmod 0640 ${CRONTAB_ENVFILE} && \
-    chown tg-housing:tg-housing ${CRONTAB_ENVFILE} && \
-    touch ${CRONTAB_PIDFILE} && \
-    chown tg-housing:tg-housing ${CRONTAB_PIDFILE} && \
-    chmod gu+s /usr/sbin/cron
+#RUN touch ${CRONTAB_FILE} && \
+#    chmod 0640 ${CRONTAB_FILE} && \
+#    chown tg-housing:tg-housing ${CRONTAB_FILE} && \
+#    touch ${CRONTAB_ENVFILE} && \
+#    chmod 0640 ${CRONTAB_ENVFILE} && \
+#    chown tg-housing:tg-housing ${CRONTAB_ENVFILE} && \
+#    touch ${CRONTAB_PIDFILE} && \
+#    chown tg-housing:tg-housing ${CRONTAB_PIDFILE} && \
+#    chmod gu+s /usr/sbin/cron
 
 # Add cron setup (run checking each morning at 6:00 UTC)
-#RUN echo "SHELL=/bin/bash" >> /etc/cron.d/check-all && \
-#    echo "BASH_ENV=/app/container.env" >> /etc/cron.d/check-all && \
-#    echo "${CRONTAB_RECORD} APP_SERVICE=check-all /bin/bash /app/docker-entrypoint >> /app/.data/cron.log 2>&1" >> /etc/cron.d/check-all && \
-#    chmod 0640 /etc/cron.d/check-all && \
-#    crontab /etc/cron.d/check-all && \
-#    touch /app/container.env && \
-#    chmod 0640 /app/container.env && \
-#    chown tg-housing:tg-housing /app/container.env && \
-#    touch /var/run/crond.pid && \
-#    chown tg-housing:tg-housing /var/run/crond.pid && \
-#    chmod gu+s /usr/sbin/cron
+RUN echo "SHELL=/bin/bash" >> /etc/cron.d/check-all && \
+    echo "BASH_ENV=/app/container.env" >> /etc/cron.d/check-all && \
+    echo "${CRONTAB_RECORD} /usr/local/bin/python -m src.cli.check_all >> ${CRONTAB_LOGFILE} 2>&1" >> /etc/cron.d/check-all && \
+#    echo "${CRONTAB_RECORD} APP_SERVICE=check-all /bin/bash /app/docker-entrypoint >> ${CRONTAB_LOGFILE} 2>&1" >> /etc/cron.d/check-all && \
+    chmod 0640 /etc/cron.d/check-all && \
+    crontab /etc/cron.d/check-all && \
+    touch /app/container.env && \
+    chmod 0640 /app/container.env && \
+    chown tg-housing:tg-housing /app/container.env && \
+    touch /var/run/crond.pid && \
+    chown tg-housing:tg-housing /var/run/crond.pid && \
+    chmod gu+s /usr/sbin/cron
 
 USER tg-housing
 
