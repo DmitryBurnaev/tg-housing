@@ -8,22 +8,24 @@ echo "=========="
 echo "Start preparing and run cron job service"
 echo "=========="
 echo ""
-echo "exporting variables to ${CRONTAB_ENVFILE}..."
-declare -p | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' > "${CRONTAB_ENVFILE}"
+echo "Exporting variables to ${CRONTAB_ENVFILE}..."
+declare | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' >> "${CRONTAB_ENVFILE}" && \
+echo "APP_SERVICE=check-all" >> "${CRONTAB_ENVFILE}" && \
+echo "PYTHONPATH=/app" >> "${CRONTAB_ENVFILE}" && \
+echo "PYTHONUNBUFFERED=1" >> "${CRONTAB_ENVFILE}"
 echo "  detected cron record: ${CRONTAB_RECORD}"
 echo "  formed file: ${CRONTAB_ENVFILE}"
 echo "  log file: ${CRONTAB_LOGFILE}"
 
-echo ""
-echo "preparing crontab file: ${CRONTAB_FILE}..."
-#echo "SHELL=/bin/bash" >> ${CRONTAB_FILE} && \
-echo "BASH_ENV=${CRONTAB_ENVFILE}" >> ${CRONTAB_FILE} && \
-#echo "${CRONTAB_RECORD} APP_SERVICE=${CRONTAB_APP_SERVICE} /bin/bash /app/docker-entrypoint >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
-echo "${CRONTAB_RECORD} /usr/local/bin/python -m src.main >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
-echo "  formed file: ${CRONTAB_FILE}"
+#echo ""
+#echo "preparing crontab file: ${CRONTAB_FILE}..."
+##echo "SHELL=/bin/bash" >> ${CRONTAB_FILE} && \
+#echo "BASH_ENV=${CRONTAB_ENVFILE}" >> ${CRONTAB_FILE} && \
+##echo "${CRONTAB_RECORD} APP_SERVICE=${CRONTAB_APP_SERVICE} /bin/bash /app/docker-entrypoint >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
+#echo "${CRONTAB_RECORD} /usr/local/bin/python -m src.main >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE}
+#echo "  formed file: ${CRONTAB_FILE}"
 echo ""
 service cron start
-#cron -f
 echo "  cron started..."
 
 echo ""
