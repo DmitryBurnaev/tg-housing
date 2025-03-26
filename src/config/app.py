@@ -33,6 +33,7 @@ PARSE_DAYS_AFTER: int = int(os.getenv("PARSE_DAYS_AFTER", "90"))
 SSL_REQUEST_VERIFY = os.getenv("SSL_REQUEST_VERIFY", "true").lower() == "true"
 
 LOCALE = os.getenv("LOCALE", "ru-RU").lower()
+LOCALE_PATH = PROJECT_PATH / "i18n"
 I18N_FALLBACK = os.getenv("I18N_FALLBACK", "false").lower() == "false"
 DT_FORMAT = "%d.%m.%Y %H:%M"
 D_FORMAT = "%d.%m.%Y"
