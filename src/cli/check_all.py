@@ -131,7 +131,7 @@ async def main() -> None:
         ) as bot,
     ):
         shutdowns = await get_shutdowns_per_user(session, user_ids=ns.user_ids)
-        logger.info(f"Found {len(shutdowns)} shutdowns for users: {ns.user_ids}")
+        logger.info(f"Found {len(shutdowns)} shutdowns")
         await send_shutdowns(bot, session, shutdowns)
 
 

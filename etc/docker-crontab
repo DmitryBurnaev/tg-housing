@@ -9,7 +9,7 @@ echo "Start preparing and run cron job service"
 echo "=========="
 echo ""
 echo "Exporting variables to ${CRONTAB_ENVFILE}..."
-declare | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' >> "${CRONTAB_ENVFILE}" && \
+declare -p | grep -Ev 'BASHOPTS|BASH_VERSINFO|EUID|PPID|SHELLOPTS|UID' >> "${CRONTAB_ENVFILE}" && \
 echo "APP_SERVICE=check-all" >> "${CRONTAB_ENVFILE}" && \
 echo "PYTHONPATH=/app" >> "${CRONTAB_ENVFILE}" && \
 echo "PYTHONUNBUFFERED=1" >> "${CRONTAB_ENVFILE}"

@@ -17,7 +17,8 @@ elif [ "${APP_SERVICE}" = "test" ]
 elif [ "${APP_SERVICE}" = "check-all" ]
   then
     export PYTHONPATH=/app
-    /usr/local/bin/python -m src.cli.check_all
+    # TODO: add /usr/local/bin to PATHs
+    cd /app && /usr/local/bin/python -m src.cli.check_all
 
 else
   echo "APP_SERVICE environment variable is unexpected or was not provided (APP_SERVICE='${APP_SERVICE}')" >&2
