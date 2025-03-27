@@ -62,19 +62,29 @@ class UserStorage(BaseStorage):
         """
         tg_user: TelegramUser | None = data.get("user")
         if not tg_user:
-            raise ValueError("User data not found.")
+            logger.warning("User[%s] data not found for key %s. Skip updating!", key.user_id, key)
+            return data
 
         city: SupportedCity | None = data.get("city")
-        address: str | None = data.get("address")
-        if not city or not address:
-            raise ValueError("Address data not found.")
+        new_addresses: list[str] = data.get("new_addresses") or []
+        rm_addresses: list[str] = data.get("rm_addresses") or []
+        if not new_addresses and not rm_addresses:
+            logger.warning(
+                "User[%s] unable to update data (no new or rm address provided)!", key.user_id
+            )
+            return data
 
         user = await self.repository.get_or_create(
             tg_user.id,
             value={"name": tg_user.full_name, "chat_id": key.chat_id},
         )
-        logger.info("User [%s] will be updated with a new address: '%r'", user.id, address)
-        await self.repository.update_addresses(user, city=city, new_addresses=[address])
+        if new_addresses:
+            logger.info("User[%s] adding a new addresses: %s", user.id, new_addresses)
+            await self.repository.add_addresses(user, city=city, new_addresses=new_addresses)
+
+        if rm_addresses:
+            logger.info("User[%s] removing addresses: %s", user.id, new_addresses)
+            await self.repository.remove_addresses(user, addresses=rm_addresses)
 
         return data
 

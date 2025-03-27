@@ -18,7 +18,7 @@ from typing import (
     ParamSpec,
 )
 
-from sqlalchemy import select, BinaryExpression, insert
+from sqlalchemy import select, BinaryExpression, insert, delete
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -203,6 +203,12 @@ class BaseRepository(Generic[ModelT]):
         """Remove the instance from the DB."""
         await self.session.delete(instance)
 
+    @transaction_commit
+    async def delete_by_ids(self, removing_ids: Sequence[int]) -> None:
+        """Remove the instances from the DB."""
+        statement = delete(self.model).filter(self.model.id.in_(removing_ids))
+        await self.session.execute(statement)
+
 
 class UserRepository(BaseRepository[User]):
     """User's repository."""
@@ -233,7 +239,7 @@ class UserRepository(BaseRepository[User]):
         return [user_address.address for user_address in (await user.get_addresses(city))]
 
     @transaction_commit
-    async def update_addresses(
+    async def add_addresses(
         self, user: User, city: SupportedCity, new_addresses: list[str]
     ) -> None:
         """Finds missing addresses and insert this ones"""
@@ -250,6 +256,29 @@ class UserRepository(BaseRepository[User]):
                 await self.add_address(user, city=city, address=address)
         else:
             logger.debug("[DB] No new addresses updated for user [%s]", user.id)
+
+    @transaction_commit
+    async def remove_addresses(self, user: User, addresses: list[str]) -> None:
+        """Finds missing addresses and insert this ones"""
+        stored_addresses = {
+            user_address.address: user_address.id
+            for user_address in await self.get_addresses(user.id)
+        }
+        removing_ids = [
+            stored_addresses.get(address) for address in addresses if address in stored_addresses
+        ]
+        if not removing_ids:
+            logger.debug("[DB] No addresses deleted for user [%s] (no stored ones)", user.id)
+            return
+
+        logger.info(
+            "[DB] Deleting addresses for user [%s] addresses: %s | ids: %s",
+            user.id,
+            addresses,
+            removing_ids,
+        )
+        statement = delete(UserAddress).filter(UserAddress.id.in_(removing_ids))
+        await self.session.execute(statement)
 
     async def add_address(self, user: User, city: SupportedCity, address: str) -> UserAddress:
         """

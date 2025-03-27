@@ -13,7 +13,9 @@ from dotenv import load_dotenv
 PROJECT_PATH = Path(__file__).parent.parent.absolute()
 ROOT_PATH = PROJECT_PATH.parent
 DATA_PATH = ROOT_PATH / ".data"
-os.makedirs(DATA_PATH, exist_ok=True)
+DATA_PATH.mkdir(parents=True, exist_ok=True)
+SITES_CACHE_PATH = DATA_PATH / "sites"
+SITES_CACHE_PATH.mkdir(parents=True, exist_ok=True)
 
 ENV_FILE_PATH = ROOT_PATH / ".env"
 if ENV_FILE_PATH.exists():
@@ -23,8 +25,6 @@ if ENV_FILE_PATH.exists():
 TG_BOT_API_TOKEN = os.getenv("TG_BOT_API_TOKEN", "")
 TG_TEST_USERS_LIST = os.getenv("TG_TEST_USERS_LIST", "").split(",")
 TG_TEST_CHAT_IDS = os.getenv("TG_TEST_CHAT_IDS", "").split(",")
-
-TMP_DATA_DIR = PROJECT_PATH.parent / ".data"
 
 DEBUG_SHUTDOWNS: bool = os.getenv("PARSE_DEBUG_SHUTDOWNS", "false").lower() == "true"
 PARSE_DAYS_BEFORE: int = int(os.getenv("PARSE_DAYS_BEFORE", "1"))

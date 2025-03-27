@@ -141,7 +141,7 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         await state.update_data(
             user=message.from_user,
             city=SupportedCity.SPB,
-            address=new_address,
+            new_addresses=[new_address],
         )
         await state.set_state(state=None)
 
@@ -170,12 +170,8 @@ async def remove_address_handler(message: Message, state: FSMContext) -> None:
         None
 
     """
-    new_addresses: list[str] = [
-        address for address in await get_addresses(state) if address != message.text
-    ]
-    await state.update_data({"addresses": new_addresses})
+    await state.update_data(user=message.from_user, rm_addresses=[message.text])
     await state.set_state(state=None)
-
     await answer(
         message,
         title=_('OK. Address "{message.text}" was removed!').format(message=message),
