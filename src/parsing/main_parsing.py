@@ -12,6 +12,7 @@ from src.config.app import (
     SSL_REQUEST_VERIFY,
     PARSE_DAYS_BEFORE,
     PARSE_DAYS_AFTER,
+    SITES_CACHE_PATH,
 )
 from src.config.constants import SupportedCity, SupportedService, RESOURCE_URLS
 from src.parsing.data_models import Address, DateRange
@@ -125,7 +126,7 @@ class BaseParser(abc.ABC):
             date_start=self._format_date(self.date_start),
             date_finish=self._format_date(self.finish_time_filter),
         )
-        tmp_file_path = DATA_PATH / "sites" / cashed_filename(url)
+        tmp_file_path = SITES_CACHE_PATH / cashed_filename(url)
         if tmp_file_path.exists():
             logger.debug(
                 "File %(tmp_file_path)s exists (content from %(url)s",

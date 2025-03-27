@@ -15,7 +15,8 @@ env.bak/
 venv.bak/
 
 .idea/
-.data/
+.data*/
 .vscode/
 .misc/
 .qodo
+.local

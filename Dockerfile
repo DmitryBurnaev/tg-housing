@@ -3,6 +3,8 @@ FROM alpine:3.20 AS code-layer
 WORKDIR /usr/src
 
 COPY src ./src
+COPY alembic ./alembic
+COPY alembic.ini .
 COPY etc/docker-entrypoint .
 COPY etc/docker-crontab .
 
@@ -17,7 +19,7 @@ COPY pyproject.toml .
 COPY poetry.lock .
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3-dev libpq-dev locales cron \
+  && apt-get install -y --no-install-recommends python3-dev locales cron \
   && pip install poetry==${POETRY_VERSION} \
   && poetry config --local virtualenvs.create false \
 	&& if [ "${DEV_DEPS}" = "true" ]; then \
@@ -29,7 +31,7 @@ RUN apt-get update \
      fi \
   && pip uninstall -y poetry poetry-core poetry-plugin-export \
   && sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && dpkg-reconfigure --frontend=noninteractive locales \
-  && apt-get remove python3-dev libpq-dev build-essential -y \
+  && apt-get remove python3-dev build-essential -y \
   && apt-get clean \
   && apt-get autoremove -y \
   && rm -rf /var/lib/apt/lists/* \
@@ -44,28 +46,18 @@ ENV CRONTAB_ENVFILE=/app/container.env
 ENV CRONTAB_PIDFILE=/var/run/crond.pid
 ENV CRONTAB_RECORD=${CRONTAB_RECORD}
 ENV CRONTAB_LOGFILE=/app/.data/cron.log
-#RUN touch ${CRONTAB_FILE} && \
-#    chmod 0640 ${CRONTAB_FILE} && \
-#    chown tg-housing:tg-housing ${CRONTAB_FILE} && \
-#    touch ${CRONTAB_ENVFILE} && \
-#    chmod 0640 ${CRONTAB_ENVFILE} && \
-#    chown tg-housing:tg-housing ${CRONTAB_ENVFILE} && \
-#    touch ${CRONTAB_PIDFILE} && \
-#    chown tg-housing:tg-housing ${CRONTAB_PIDFILE} && \
-#    chmod gu+s /usr/sbin/cron
 
 # Add cron setup (run checking each morning at 6:00 UTC)
-RUN echo "SHELL=/bin/bash" >> /etc/cron.d/check-all && \
-    echo "BASH_ENV=/app/container.env" >> /etc/cron.d/check-all && \
-    echo "${CRONTAB_RECORD} /usr/local/bin/python -m src.cli.check_all >> ${CRONTAB_LOGFILE} 2>&1" >> /etc/cron.d/check-all && \
-#    echo "${CRONTAB_RECORD} APP_SERVICE=check-all /bin/bash /app/docker-entrypoint >> ${CRONTAB_LOGFILE} 2>&1" >> /etc/cron.d/check-all && \
-    chmod 0640 /etc/cron.d/check-all && \
-    crontab /etc/cron.d/check-all && \
-    touch /app/container.env && \
-    chmod 0640 /app/container.env && \
-    chown tg-housing:tg-housing /app/container.env && \
-    touch /var/run/crond.pid && \
-    chown tg-housing:tg-housing /var/run/crond.pid && \
+RUN echo "SHELL=/bin/bash" >> ${CRONTAB_FILE} && \
+    echo "BASH_ENV=${CRONTAB_ENVFILE}" >> ${CRONTAB_FILE} && \
+    echo "${CRONTAB_RECORD} /usr/local/bin/python -m src.cli.check_all >> ${CRONTAB_LOGFILE} 2>&1" >> ${CRONTAB_FILE} && \
+    chmod 0640 ${CRONTAB_FILE} && \
+    crontab ${CRONTAB_FILE} && \
+    touch ${CRONTAB_ENVFILE} && \
+    chmod 0640 ${CRONTAB_ENVFILE} && \
+    chown tg-housing:tg-housing ${CRONTAB_ENVFILE} && \
+    touch ${CRONTAB_PIDFILE} && \
+    chown tg-housing:tg-housing ${CRONTAB_PIDFILE} && \
     chmod gu+s /usr/sbin/cron
 
 USER tg-housing
