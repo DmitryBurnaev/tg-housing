@@ -8,7 +8,6 @@ from typing import ClassVar, Pattern
 import httpx
 
 from src.config.app import (
-    DATA_PATH,
     SSL_REQUEST_VERIFY,
     PARSE_DAYS_BEFORE,
     PARSE_DAYS_AFTER,

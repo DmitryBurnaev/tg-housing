@@ -22,7 +22,6 @@ from src.config.constants import SupportedCity
 from src.handlers.helpers import (
     UserAddressStatesGroup,
     fetch_addresses,
-    get_addresses,
     fetch_shutdowns,
     answer,
 )

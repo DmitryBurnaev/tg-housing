@@ -1,4 +1,4 @@
-from typing import Sequence, reveal_type
+from typing import Sequence
 
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
