@@ -1,7 +1,6 @@
 """DB-specific module which provide specific operations on database."""
 
 import hashlib
-import json
 import logging
 from functools import wraps
 from types import TracebackType
@@ -18,7 +17,7 @@ from typing import (
     ParamSpec,
 )
 
-from sqlalchemy import select, BinaryExpression, insert, delete
+from sqlalchemy import select, BinaryExpression, delete
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 

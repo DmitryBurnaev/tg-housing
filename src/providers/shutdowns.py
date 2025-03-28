@@ -1,6 +1,6 @@
 import logging
 import datetime
-from operator import itemgetter, attrgetter
+from operator import attrgetter
 from typing import NamedTuple, Type
 
 from src.config.app import DT_FORMAT, D_FORMAT
