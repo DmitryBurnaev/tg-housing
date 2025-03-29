@@ -63,7 +63,7 @@ class BaseParser(abc.ABC):
         self.urls: dict[SupportedService, str] | None = RESOURCE_URLS.get(city)
         self.city = city
         self.date_start = utcnow().date() - timedelta(days=self.days_before)
-        self.finish_time_filter = self.date_start + timedelta(days=self.days_after)
+        self.finish_time_filter = utcnow().date() + timedelta(days=self.days_after)
         self.verbose: bool = verbose
 
     def parse(self, user_address: Address) -> dict[Address, set[DateRange]]:
