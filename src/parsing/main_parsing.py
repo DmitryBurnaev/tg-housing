@@ -62,8 +62,9 @@ class BaseParser(abc.ABC):
     def __init__(self, city: SupportedCity, verbose: bool = False) -> None:
         self.urls: dict[SupportedService, str] | None = RESOURCE_URLS.get(city)
         self.city = city
-        self.date_start = utcnow().date() - timedelta(days=self.days_before)
-        self.finish_time_filter = utcnow().date() + timedelta(days=self.days_after)
+        self.now_time = utcnow()
+        self.date_start = self.now_time.date() - timedelta(days=self.days_before)
+        self.finish_time_filter = self.now_time.date() + timedelta(days=self.days_after)
         self.verbose: bool = verbose
 
     def parse(self, user_address: Address) -> dict[Address, set[DateRange]]:
@@ -94,19 +95,45 @@ class BaseParser(abc.ABC):
             return {}
 
         logger.debug(
-            "Parsed %(service)s | \n%(parsed_data)s",
+            "Parsing [%(service)s] Got all data-ranges | '%(address)s' | %(parsed_data)s",
             {
                 "service": self.service,
-                "parsed_data": parsed_data,
+                "address": user_address,
+                "parsed_data": self._get_log_friendly_result(parsed_data),
             },
         )
 
         found_ranges: dict[Address, set[DateRange]] = {}
         for address, date_ranges in parsed_data.items():
+            filtered_date_ranges: set[DateRange] = set()
+            for date_range in date_ranges:
+                if date_range >= self.now_time:
+                    filtered_date_ranges.add(date_range)
+
             if address.matches(user_address):
                 found_ranges[address] = date_ranges
 
+        logger.info(
+            "Parsing [%(service)s] Result | '%(address)s' | %(parsed_data)s",
+            {
+                "service": self.service,
+                "address": user_address,
+                "parsed_data": self._get_log_friendly_result(found_ranges),
+            },
+        )
         return found_ranges
+
+    @staticmethod
+    def _get_log_friendly_result(parsed_data: dict[Address, set[DateRange]]) -> str:
+        if not parsed_data:
+            return "No parsed data"
+
+        result = "\n"
+        for address, date_ranges in parsed_data.items():
+            result += f"{address!r} => {', '.join([str(date) for date in date_ranges])}\n"
+
+        return f"{result}===="
+        # return result.removesuffix("\n")
 
     def _get_content(self, service: SupportedService, address: Address) -> str:
         def cashed_filename(url: str) -> str:

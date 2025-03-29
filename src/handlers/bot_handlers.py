@@ -136,22 +136,26 @@ async def add_address_handler(message: Message, state: FSMContext) -> None:
         )
         return
 
-    if new_address:
+    try:
         await state.update_data(
             user=message.from_user,
             city=SupportedCity.SPB,
             new_addresses=[new_address],
         )
+    except Exception as exc:
+        logging.exception("Could not add new address: %r", exc)
+        await answer(message, _("Hmm... something went wrong."))
+    else:
+        await answer(
+            message,
+            title=_('Ok, I\'ll remember your new address "{new_address}".').format(
+                new_address=new_address
+            ),
+            entities=[await fetch_addresses(state)],
+            reply_keyboard=True,
+        )
+    finally:
         await state.set_state(state=None)
-
-    await answer(
-        message,
-        title=_('Ok, I\'ll remember your new address "{new_address}".').format(
-            new_address=new_address
-        ),
-        entities=[await fetch_addresses(state)],
-        reply_keyboard=True,
-    )
 
 
 @form_router.message(UserAddressStatesGroup.remove_address)
@@ -169,14 +173,20 @@ async def remove_address_handler(message: Message, state: FSMContext) -> None:
         None
 
     """
-    await state.update_data(user=message.from_user, rm_addresses=[message.text])
-    await state.set_state(state=None)
-    await answer(
-        message,
-        title=_('OK. Address "{message.text}" was removed!').format(message=message),
-        entities=[await fetch_addresses(state)],
-        reply_keyboard=True,
-    )
+    try:
+        await state.update_data(user=message.from_user, rm_addresses=[message.text])
+    except Exception as exc:
+        logging.exception("Could not fetch shutdowns: %r", exc)
+        await answer(message, _("Hmm... something went wrong."))
+    else:
+        await answer(
+            message,
+            title=_('OK. Address "{message.text}" was removed!').format(message=message),
+            entities=[await fetch_addresses(state)],
+            reply_keyboard=True,
+        )
+    finally:
+        await state.set_state(state=None)
 
 
 @form_router.message(Command("cancel"))
