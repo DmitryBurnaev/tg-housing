@@ -39,7 +39,7 @@ STREET_ELEMENTS = r"""
 )
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
-    rf"^(?P<street_prefix_1>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?)\s*(?P<street_prefix_2>{STREET_ELEMENTS})?\s*,?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
+    rf"^(?P<street_prefix_1>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?)(?P<street_prefix_2>\s+{STREET_ELEMENTS})?\s*,?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
 )
 REPLACE_STREET_PREFIX: dict[str, str] = {
     "пр": "пр-кт",
