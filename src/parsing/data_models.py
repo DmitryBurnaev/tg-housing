@@ -64,21 +64,21 @@ class DateRange(NamedTuple):
 
     def __gt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
         if DEBUG_SHUTDOWNS:
-            logger.debug("Fake data comparator: %r > %r | always True", self, other)
+            logger.warning("Fake data comparator: %r > %r | always True", self, other)
             return True
 
         if self.end is None:
-            logger.debug("Fake data comparator: %r > %r | always False", self, other)
+            logger.warning("Fake data comparator: %r > %r | always False", self, other)
             return False
 
         if isinstance(self.end, datetime.date):
-            return self.end > other
+            return self.end >= other
 
         return self.end.astimezone(datetime.timezone.utc) >= other
 
     def __lt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
         if self.end is None:
-            logger.debug("Fake data comparator: %r < %r | always True", self, other)
+            logger.warning("Fake data comparator: %r < %r | always True", self, other)
             return True
 
         if isinstance(self.end, datetime.date):
