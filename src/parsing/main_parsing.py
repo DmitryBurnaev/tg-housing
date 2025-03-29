@@ -2,8 +2,8 @@ import abc
 import hashlib
 import logging
 import urllib.parse
-from datetime import date, datetime, timedelta, timezone
 from typing import ClassVar, Pattern
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 
@@ -105,12 +105,13 @@ class BaseParser(abc.ABC):
 
         found_ranges: dict[Address, set[DateRange]] = {}
         for address, date_ranges in parsed_data.items():
+            print(address)
             filtered_date_ranges: set[DateRange] = set()
             for date_range in date_ranges:
                 if date_range >= self.now_time:
                     filtered_date_ranges.add(date_range)
 
-            if address.matches(user_address):
+            if filtered_date_ranges and address.matches(user_address):
                 found_ranges[address] = date_ranges
 
         logger.info(
