@@ -39,7 +39,7 @@ STREET_ELEMENTS = r"""
 )
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
-    rf"^(?P<street_prefix>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?),?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
+    rf"^(?P<street_prefix_1>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?)\s*(?P<street_prefix_2>{STREET_ELEMENTS})?\s*,?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
 )
 REPLACE_STREET_PREFIX: dict[str, str] = {
     "пр": "пр-кт",
@@ -78,8 +78,10 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
     :param pattern: regexp's pattern for fetching street/houses from that
     :return <ParsedAddress> like ParsedAddress("пр-кт", "Наименование проспекта", [34, 35], 34, 35)
     """
+
     if match := (pattern or ADDRESS_DEFAULT_PATTERN).search(address):
-        if street_prefix := match.group("street_prefix"):
+        street_prefix = match.group("street_prefix_1") or match.group("street_prefix_2")
+        if street_prefix:
             street_prefix = street_prefix.strip().removesuffix(".")
             street_prefix = REPLACE_STREET_PREFIX.get(street_prefix, street_prefix)
         else:

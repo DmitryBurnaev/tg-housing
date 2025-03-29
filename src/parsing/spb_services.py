@@ -54,8 +54,8 @@ class SPBElectricityParser(BaseParser):
             date_start, time_start, date_end, time_end = map(self._clear_string, dates)
 
             if len(raw_addresses) > 1:
-                logger.warning(
-                    "Streets count more than 1: %(service)s | %(address)s | %(raw_addresses)s)",
+                logger.debug(
+                    "Parsing [%(service)s] Streets count > 1: %(address)s | %(raw_addresses)s)",
                     {"service": service, "address": address, "raw_addresses": raw_addresses},
                 )
 
@@ -65,7 +65,7 @@ class SPBElectricityParser(BaseParser):
                 raw_address = self._clear_string(raw_address)
                 parsed_address = parse_address(pattern=self.address_pattern, address=raw_address)
                 logger.debug(
-                    "Parsing [%(service)s] Found record: raw: "
+                    "Parsing [%(service)s] Found raw: "
                     "%(raw_address)s | %(street_name)s | %(houses)s | %(start)s | %(end)s",
                     {
                         "service": service,
@@ -76,6 +76,13 @@ class SPBElectricityParser(BaseParser):
                         "end": end_time.isoformat() if end_time else "",
                     },
                 )
+                if not parsed_address.houses:
+                    logger.warning(
+                        "Parsing [%(service)s] Not found houses for parsed raw: '%(raw_address)s' ",
+                        {"service": service, "raw_address": raw_address},
+                    )
+                    continue
+
                 for house in parsed_address.houses:
                     address_key = Address(
                         city=self.city,
@@ -84,7 +91,12 @@ class SPBElectricityParser(BaseParser):
                         house=house,
                         raw=raw_address,
                     )
-                    result[address_key].add(DateRange(start_time, end_time))
+                    date_range = DateRange(start_time, end_time)
+                    result[address_key].add(date_range)
+                    logger.debug(
+                        "Parsing [%(service)s] Found address key: %(address_key)s | %(date_range)s",
+                        {"service": service, "address_key": address_key, "date_range": date_range},
+                    )
 
         return result
 

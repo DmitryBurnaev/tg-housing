@@ -24,6 +24,9 @@ class Address(NamedTuple):
     street_name: str
     street_prefix: str = "ул"
 
+    def __str__(self) -> str:
+        return f"[{self.city}] {self.street_prefix}. {self.street_name}, {self.house}"
+
     def matches(self, other: "Address") -> bool:
         """
         Check if the given Address object matches with the current Address object.
@@ -62,13 +65,14 @@ class DateRange(NamedTuple):
     start: datetime.datetime | datetime.date | None
     end: datetime.datetime | datetime.date | None
 
-    def __gt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
+    def __ge__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
+        """We need to return only date range after specific date (today)"""
         if DEBUG_SHUTDOWNS:
             logger.warning("Fake data comparator: %r > %r | always True", self, other)
             return True
 
         if self.end is None:
-            logger.warning("Fake data comparator: %r > %r | always False", self, other)
+            logger.warning("Unknown end time: %r > %r | always False", self, other)
             return False
 
         if isinstance(self.end, datetime.date):
@@ -76,15 +80,20 @@ class DateRange(NamedTuple):
 
         return self.end.astimezone(datetime.timezone.utc) >= other
 
-    def __lt__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
-        if self.end is None:
+    def __le__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
+        """In some cases we need to check that this range is before concrete date"""
+        if DEBUG_SHUTDOWNS:
             logger.warning("Fake data comparator: %r < %r | always True", self, other)
             return True
 
-        if isinstance(self.end, datetime.date):
-            return self.end < other
+        if self.end is None:
+            logger.warning("Unknown end time: %r < %r | always True", self, other)
+            return True
 
-        return self.end.astimezone(datetime.timezone.utc) < other
+        if isinstance(self.end, datetime.date):
+            return self.end <= other
+
+        return self.end.astimezone(datetime.timezone.utc) <= other
 
     def __str__(self) -> str:
         start = self.start.isoformat() if self.start else None
