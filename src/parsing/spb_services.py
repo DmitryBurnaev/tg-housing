@@ -177,7 +177,7 @@ class SPBHotWaterParser(BaseParser):
                         },
                     )
 
-                parsed_street: ParsedAddress = parse_street_name_regex(street)
+                parsed_street: ParsedAddress = parse_address(street)
                 for period in (period_1, period_2):
                     start_dt, finish_dt = self._prepare_dates(period)
                     logger.debug(
