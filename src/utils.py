@@ -3,9 +3,12 @@ import re
 import logging
 from typing import NamedTuple
 
-logger = logging.getLogger(__name__)
+from src.config.app import MAPPING_STRING_REPLACEMENT
 
-STREET_ELEMENTS = r"""
+logger = logging.getLogger(__name__)
+STREET_ELEMENTS_1 = r"\s+(?P<street_prefix>ал\.?|пл\.?)"
+
+STREET_ELEMENTS = r"""\s+(?P<street_prefix>
 ал\.?|
 б-р\.?|
 взв\.?|
@@ -34,18 +37,19 @@ STREET_ELEMENTS = r"""
 тракт\.?|
 туп\.?|
 ул\.?|Ул\.?|
-ш\.?""".replace(
+ш\.?)""".replace(
     "\n", ""
 )
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
-    rf"^(?P<street_prefix_1>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?)\s*(?P<street_prefix_2>{STREET_ELEMENTS})?\s*,?\s(?:д\.?|дом)?\s*(?P<start_house>\d*)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
+    r"^(?P<street_name>[А-Яа-яЁёA-Za-z\s]+?)(?:\s*,?\s*(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:\s*[-–]\s*(?P<end_house>\d+))?(?:\s*корп\.\d+)?)?$"
 )
+
 REPLACE_STREET_PREFIX: dict[str, str] = {
     "пр": "пр-кт",
     "пр-т": "пр-кт",
 }
-DEFAULT_STREET_PREFIX = "пр-кт"
+DEFAULT_STREET_PREFIX = "ул"
 
 
 class ParsedAddress(NamedTuple):
@@ -79,16 +83,20 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
     :return <ParsedAddress> like ParsedAddress("пр-кт", "Наименование проспекта", [34, 35], 34, 35)
     """
 
+    street_prefix = None
+    if match := re.search(STREET_ELEMENTS, f" {address}"):
+        street_prefix = match.group("street_prefix")
+        address = (re.sub(STREET_ELEMENTS, "", f" {address}")).strip()
+
     if match := (pattern or ADDRESS_DEFAULT_PATTERN).search(address):
-        street_prefix = match.group("street_prefix_1") or match.group("street_prefix_2")
+        street_name = match.group("street_name").strip()
         if street_prefix:
-            street_prefix = street_prefix.strip().removesuffix(".")
+            street_prefix = street_prefix.strip().removesuffix(".").strip()
             street_prefix = REPLACE_STREET_PREFIX.get(street_prefix, street_prefix)
         else:
-            logger.debug("Using default street prefix")
-            street_prefix = DEFAULT_STREET_PREFIX
+            street_prefix = MAPPING_STRING_REPLACEMENT.get(street_name, DEFAULT_STREET_PREFIX)
+            logger.debug("Using default street prefix '%s'", street_prefix)
 
-        street_name = match.group("street_name").strip()
         start_house = int(match.group("start_house")) if match.group("start_house") else None
         if start_house:
             end_house = int(match.group("end_house")) if match.group("end_house") else start_house

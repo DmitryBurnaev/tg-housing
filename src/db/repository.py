@@ -185,7 +185,8 @@ class BaseRepository(Generic[ModelT]):
         """Tries to find instance by ID and create if it wasn't found"""
         instance = await self.first(id_)
         if instance is None:
-            instance = await self.create(value | {"id": id_})
+            await self.create(value | {"id": id_})
+            instance = await self.get(id_)
 
         return instance
 
