@@ -14,6 +14,7 @@ lint: ## Linting project
 format: ## Apply formatting using black
 	@echo Formatting...
 	poetry run black .
+	poetry run ruff check --fix
 
 .PHONY: upgrade
 upgrade: ## Update dependencies
@@ -30,7 +31,12 @@ migrations-upgrade: ## Apply migrations
 	@echo Migrations: apply revisions...
 	poetry run alembic upgrade head
 
-.PHONY: migrations
+.PHONY: migrate
+migrate: ## Apply migrations
+	@echo Migrations: apply revisions...
+	poetry run alembic upgrade head
+
+.PHONY: migrations-downgrade
 migrations-downgrade: ## Downgrade (unapply) migration (last revision)
 	@echo Migrations: downgrade last revisions...
 	poetry run alembic downgrade -1

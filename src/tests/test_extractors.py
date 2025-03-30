@@ -9,40 +9,44 @@ from src.utils import parse_address
     "address, expected_result",
     [
         (
-            "Avenue Name пр., д.75 корп.1",
-            {"street_prefix": "пр-кт", "street_name": "Avenue Name пр.", "houses": [75]},
+            "Загадочный Инопланетянин пр., д.75 корп.1",
+            {"street_prefix": "пр-кт", "street_name": "Загадочный Инопланетянин", "houses": [75]},
         ),
         (
-            "пр. Avenue Name         , д.75 корп.1",
-            {"street_prefix": "пр-кт", "street_name": "Avenue Name", "houses": [75]},
+            "пр-кт Загадочный Инопланетянин д.175 корп.1",
+            {"street_prefix": "пр-кт", "street_name": "Загадочный Инопланетянин", "houses": [175]},
         ),
         (
-            "ул. Street Name, д.75",
-            {"street_prefix": "ул", "street_name": "Street Name", "houses": [75]},
+            "Загадочный Инопланетянин         , дом 75",
+            {"street_prefix": "ул", "street_name": "Загадочный Инопланетянин", "houses": [75]},
         ),
         (
-            "тракт Street Name, д.75",
-            {"street_prefix": "тракт", "street_name": "Street Name", "houses": [75]},
+            "ул. Загадочный, д.75",
+            {"street_prefix": "ул", "street_name": "Загадочный", "houses": [75]},
         ),
         (
-            "Avenue Name пр., д.75-79",
+            "тракт Загадочный, д.75",
+            {"street_prefix": "тракт", "street_name": "Загадочный", "houses": [75]},
+        ),
+        (
+            "Загадочный Инопланетянин пр., д.75-79",
             {
                 "street_prefix": "пр-кт",
-                "street_name": "Avenue Name пр.",
+                "street_name": "Загадочный Инопланетянин",
                 "houses": [75, 76, 77, 78, 79],
             },
         ),
         (
-            "Avenue Name пр., д.79",
-            {"street_prefix": "пр-кт", "street_name": "Avenue Name пр.", "houses": [79]},
+            "пр. Загадочный Инопланетянин 79",
+            {"street_prefix": "пр-кт", "street_name": "Загадочный Инопланетянин", "houses": [79]},
         ),
         (
             "Avenue Name пр., дом 75",
-            {"street_prefix": "пр-кт", "street_name": "Avenue Name пр.", "houses": [75]},
+            {"street_prefix": "пр-кт", "street_name": "Avenue Name", "houses": [75]},
         ),
         (
             "Invalid Address Format",
-            {"street_prefix": "", "street_name": "Invalid Address Format", "houses": []},
+            {"street_prefix": "ул", "street_name": "Invalid Address Format", "houses": []},
         ),
     ],
 )

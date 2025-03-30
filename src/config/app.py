@@ -41,3 +41,10 @@ D_FORMAT = "%d.%m.%Y"
 # SQLite database URL for async connection
 DATABASE_URL = f"sqlite:///{DATA_PATH}/database.db"
 DATABASE_URL_ASYNC = f"sqlite+aiosqlite:///{DATA_PATH}/database.db"
+
+MAPPING_STRING_REPLACEMENT: dict[str, str] = {}
+for _mapping in os.getenv("PREFIX_STREET_REPLACEMENT", "").split(";"):
+    # creating mapping like: 'StreetName' -> 'av'
+    if _mapping:
+        key, value = _mapping.split(":")
+        MAPPING_STRING_REPLACEMENT[key] = value

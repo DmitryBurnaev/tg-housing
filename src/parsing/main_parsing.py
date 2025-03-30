@@ -105,7 +105,6 @@ class BaseParser(abc.ABC):
 
         found_ranges: dict[Address, set[DateRange]] = {}
         for address, date_ranges in parsed_data.items():
-            print(address)
             filtered_date_ranges: set[DateRange] = set()
             for date_range in date_ranges:
                 if date_range >= self.now_time:
