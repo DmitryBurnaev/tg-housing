@@ -39,11 +39,14 @@ class Address(NamedTuple):
                     False otherwise.
         """
         logger.debug("Comparing Address: %s | %s", self, other)
+        street_equal = (
+            self.street_name.lower() in other.street_name.lower()
+            and other.street_name.lower() in self.street_name.lower()
+        )
         return all(
             [
                 self.city == other.city,
-                self.street_name == other.street_name,
-                self.street_prefix == other.street_prefix,
+                street_equal,
                 self.house == other.house,
             ]
         )

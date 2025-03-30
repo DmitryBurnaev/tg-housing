@@ -39,7 +39,7 @@ STREET_ELEMENTS = r"""
 )
 
 ADDRESS_DEFAULT_PATTERN = re.compile(
-    rf"^(?P<street_prefix_1>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?)(?P<street_prefix_2>\s+{STREET_ELEMENTS})?\s*,?\s(?:д\.?|дом)?\s*(?P<start_house>\d+)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
+    rf"^(?P<street_prefix_1>{STREET_ELEMENTS})?\s*(?P<street_name>[\w\s.]+?)(?P<street_prefix_2>\s+{STREET_ELEMENTS})?\s*,?\s(?:д\.?|дом)?\s*(?P<start_house>\d*)(?:[-–](?P<end_house>\d+))?(?:\sкорп\.\d+)?"
 )
 REPLACE_STREET_PREFIX: dict[str, str] = {
     "пр": "пр-кт",
@@ -89,9 +89,14 @@ def parse_address(address: str, pattern: re.Pattern[str] | None = None) -> Parse
             street_prefix = DEFAULT_STREET_PREFIX
 
         street_name = match.group("street_name").strip()
-        start_house = int(match.group("start_house"))
-        end_house = int(match.group("end_house")) if match.group("end_house") else start_house
-        houses = list(range(start_house, end_house + 1))
+        start_house = int(match.group("start_house")) if match.group("start_house") else None
+        if start_house:
+            end_house = int(match.group("end_house")) if match.group("end_house") else start_house
+            houses = list(range(start_house, end_house + 1))
+        else:
+            end_house = None
+            houses = []
+
         parsed_address = ParsedAddress(
             street_prefix=street_prefix or "",
             street_name=street_name,
