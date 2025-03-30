@@ -69,7 +69,11 @@ class DateRange(NamedTuple):
     end: datetime.datetime | datetime.date | None
 
     def __ge__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
-        """We need to return only date range after specific date (today)"""
+        """
+        We need to return only date range after specific date (today)
+
+        :param other: always utcnow (datetime)
+        """
         if DEBUG_SHUTDOWNS:
             logger.warning("Fake data comparator: %r > %r | always True", self, other)
             return True
@@ -78,13 +82,17 @@ class DateRange(NamedTuple):
             logger.warning("Unknown end time: %r > %r | always False", self, other)
             return False
 
-        if isinstance(self.end, datetime.date):
-            return self.end >= other
+        if isinstance(self.end, datetime.datetime):
+            return self.end.astimezone(datetime.timezone.utc) >= other
 
-        return self.end.astimezone(datetime.timezone.utc) >= other
+        return self.end >= other.date()
 
     def __le__(self, other: datetime.datetime) -> bool:  # type: ignore[override]
-        """In some cases we need to check that this range is before concrete date"""
+        """
+        In some cases we need to check that this range is before concrete date
+
+        :param other: always utcnow (datetime)
+        """
         if DEBUG_SHUTDOWNS:
             logger.warning("Fake data comparator: %r < %r | always True", self, other)
             return True
@@ -93,10 +101,10 @@ class DateRange(NamedTuple):
             logger.warning("Unknown end time: %r < %r | always True", self, other)
             return True
 
-        if isinstance(self.end, datetime.date):
-            return self.end <= other
+        if isinstance(self.end, datetime.datetime):
+            return self.end.astimezone(datetime.timezone.utc) <= other
 
-        return self.end.astimezone(datetime.timezone.utc) <= other
+        return self.end <= other.date()
 
     def __str__(self) -> str:
         start = self.start.isoformat() if self.start else None

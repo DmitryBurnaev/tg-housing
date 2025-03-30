@@ -8,7 +8,7 @@ from src.decorators import set_locale_decorator
 from src.config.constants import SupportedService
 from src.parsing.data_models import Address, DateRange
 from src.parsing.main_parsing import BaseParser, logger
-from src.utils import parse_address, ParsedAddress, parse_street_name_regex
+from src.utils import parse_address, ParsedAddress
 
 __all__ = (
     "SPBElectricityParser",
