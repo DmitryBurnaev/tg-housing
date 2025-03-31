@@ -24,8 +24,6 @@ services:
       - .env
     environment:
       - APP_SERVICE=test
-    volumes:
-      - ${PWD}/.data:/app/.data
 
   check-all:
     image:

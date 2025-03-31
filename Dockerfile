@@ -60,6 +60,8 @@ RUN echo "SHELL=/bin/bash" >> ${CRONTAB_FILE} && \
     chown tg-housing:tg-housing ${CRONTAB_PIDFILE} && \
     chmod gu+s /usr/sbin/cron
 
+RUN mkdir .data && chown tg-housing:tg-housing /app/.data
+
 USER tg-housing
 
 COPY --from=code-layer --chown=tg-housing:tg-housing /usr/src .
